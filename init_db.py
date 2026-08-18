@@ -125,13 +125,27 @@ CREATE TABLE "Criminal involvement" (
 """
 
 
+SEED = """
+INSERT INTO USER (UID, phone, age, gender, name, password) VALUES
+    (1, '01700000001', 34, 'M', 'rahman', 'police123'),
+    (2, '01700000002', 28, 'F', 'fatima', 'user123');
+
+INSERT INTO POLICE (UID, "Badge No", "patrol area", "number of arrests", department, rank)
+VALUES (1, 'BD-1042', 'Gulshan', 12, 'Investigation', 'Inspector');
+
+INSERT INTO Victim (UID) VALUES (2);
+"""
+
+
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)
+    conn.executescript(SEED)
     conn.commit()
     conn.close()
     print(f"Initialized database at {DB_PATH}")
+    print("Demo accounts: rahman / police123 (police), fatima / user123 (civilian)")
 
 
 if __name__ == "__main__":
