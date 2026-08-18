@@ -1,0 +1,55 @@
+{% extends "app.html" %}
+
+{% block title %}Jail info · Sentinel{% endblock %}
+
+{# jails: JID, Name, Location, Capacity, occupancy #}
+
+{% set jails = jails if jails is defined else [
+    {"JID": 1, "Name": "Dhaka Central Jail", "Location": "Keraniganj, Dhaka", "Capacity": 400, "occupancy": 312},
+    {"JID": 2, "Name": "Kashimpur Central Jail", "Location": "Gazipur", "Capacity": 250, "occupancy": 180},
+    {"JID": 3, "Name": "Chittagong Central Jail", "Location": "Chattogram", "Capacity": 300, "occupancy": 210},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Facilities</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Jail info</h1>
+    <p class="mt-2 text-sm text-slate-500">Public view of capacity, current population, and facility location.</p>
+</div>
+
+<div class="grid gap-4">
+    {% if jails %}
+        {% for jail in jails %}
+        {% set pct = ((jail.occupancy or 0) / jail.Capacity * 100) if jail.Capacity else 0 %}
+        <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="font-semibold text-slate-800">{{ jail.Name }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ jail.Location or "—" }}</p>
+                </div>
+                <a href="{{ url_for('jail_info_detail', jid=jail.JID) }}" class="w-fit rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">Facility details</a>
+            </div>
+            <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <p class="text-xs text-slate-500">Capacity</p>
+                    <p class="mt-1 text-lg font-semibold text-slate-800">{{ jail.Capacity or 0 }}</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <p class="text-xs text-slate-500">Criminals housed</p>
+                    <p class="mt-1 text-lg font-semibold text-slate-800">{{ jail.occupancy or 0 }}</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <p class="text-xs text-slate-500">Occupancy</p>
+                    <p class="mt-1 text-lg font-semibold text-slate-800">{{ pct|round(0) }}%</p>
+                </div>
+            </div>
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-2 rounded-full bg-blue-600" style="width: {{ [pct, 100]|min }}%"></div>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+    <article class="rounded-2xl border border-blue-100 bg-white px-5 py-10 text-center text-sm text-slate-500">No facilities published.</article>
+    {% endif %}
+</div>
+{% endblock %}

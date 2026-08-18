@@ -1,0 +1,58 @@
+{% extends "app.html" %}
+
+{% block title %}Officers · Sentinel{% endblock %}
+
+{# officers: UID, name, badge_no, rank, department, patrol_area, arrests, supervisor_name #}
+
+{% set officers = officers if officers is defined else [
+    {"UID": 1, "name": "rahman", "badge_no": "BD-1042", "rank": "Inspector", "department": "Investigation", "patrol_area": "Gulshan", "arrests": 12, "supervisor_name": None},
+    {"UID": 3, "name": "ayesha", "badge_no": "BD-2218", "rank": "Sergeant", "department": "Patrol", "patrol_area": "Mirpur", "arrests": 7, "supervisor_name": "rahman"},
+    {"UID": 4, "name": "imran", "badge_no": "BD-3301", "rank": "Constable", "department": "Patrol", "patrol_area": "Motijheel", "arrests": 4, "supervisor_name": "rahman"},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Personnel</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Police profiles</h1>
+    <p class="mt-2 text-sm text-slate-500">Supervisors can open an officer and update rank, unit, and reporting line.</p>
+</div>
+
+<article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+    {% if officers %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Badge</th>
+                    <th class="px-5 py-3 font-medium">Name</th>
+                    <th class="px-5 py-3 font-medium">Rank</th>
+                    <th class="px-5 py-3 font-medium">Department</th>
+                    <th class="px-5 py-3 font-medium">Patrol area</th>
+                    <th class="px-5 py-3 font-medium">Arrests</th>
+                    <th class="px-5 py-3 font-medium">Supervisor</th>
+                    <th class="px-5 py-3 font-medium"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for officer in officers %}
+                <tr class="text-slate-700">
+                    <td class="px-5 py-3 font-medium">{{ officer.badge_no or "—" }}</td>
+                    <td class="px-5 py-3">{{ officer.name }}</td>
+                    <td class="px-5 py-3">{{ officer.rank or "—" }}</td>
+                    <td class="px-5 py-3">{{ officer.department or "—" }}</td>
+                    <td class="px-5 py-3">{{ officer.patrol_area or "—" }}</td>
+                    <td class="px-5 py-3">{{ officer.arrests or 0 }}</td>
+                    <td class="px-5 py-3">{{ officer.supervisor_name or "—" }}</td>
+                    <td class="px-5 py-3 text-right">
+                        <a href="{{ url_for('officer_detail', uid=officer.UID) }}" class="font-medium text-blue-600 hover:text-blue-700">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="px-5 py-10 text-center text-sm text-slate-500">No police profiles yet.</p>
+    {% endif %}
+</article>
+{% endblock %}

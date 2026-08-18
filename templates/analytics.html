@@ -1,0 +1,93 @@
+{% extends "app.html" %}
+
+{% block title %}Analytics · Sentinel{% endblock %}
+
+{# hot_zones: location, count, pct
+   busy_hours: label, count, pct
+   totals: incidents, locations, peak_label #}
+
+{% set totals = totals if totals is defined else {"incidents": 24, "locations": 6, "peak_label": "6–9 PM"} %}
+{% set hot_zones = hot_zones if hot_zones is defined else [
+    {"location": "Gulshan-2", "count": 8, "pct": 100},
+    {"location": "Motijheel", "count": 6, "pct": 75},
+    {"location": "Mirpur-10", "count": 5, "pct": 62},
+    {"location": "Dhanmondi", "count": 3, "pct": 38},
+    {"location": "Uttara", "count": 2, "pct": 25},
+] %}
+{% set busy_hours = busy_hours if busy_hours is defined else [
+    {"label": "12–3 AM", "count": 1, "pct": 12},
+    {"label": "3–6 AM", "count": 0, "pct": 0},
+    {"label": "6–9 AM", "count": 2, "pct": 25},
+    {"label": "9–12 PM", "count": 4, "pct": 50},
+    {"label": "12–3 PM", "count": 3, "pct": 38},
+    {"label": "3–6 PM", "count": 5, "pct": 62},
+    {"label": "6–9 PM", "count": 8, "pct": 100},
+    {"label": "9–12 AM", "count": 1, "pct": 12},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Patterns</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Analytics</h1>
+    <p class="mt-2 text-sm text-slate-500">Hot zones from incident location. Busy hours from incident date/time.</p>
+</div>
+
+<section class="grid gap-4 sm:grid-cols-3">
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm text-slate-500">Incidents counted</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ totals.incidents }}</p>
+    </article>
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm text-slate-500">Distinct locations</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ totals.locations }}</p>
+    </article>
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm text-slate-500">Peak window</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ totals.peak_label }}</p>
+    </article>
+</section>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-2">
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">Hot zones</h2>
+        <p class="mt-1 text-xs text-slate-500">GROUP BY Incident Location</p>
+        {% if hot_zones %}
+        <ul class="mt-5 flex flex-col gap-4">
+            {% for zone in hot_zones %}
+            <li>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium text-slate-800">{{ zone.location }}</span>
+                    <span class="text-slate-500">{{ zone.count }}</span>
+                </div>
+                <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div class="h-2 rounded-full bg-blue-600" style="width: {{ zone.pct or 0 }}%"></div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mt-8 text-center text-sm text-slate-500">No location data yet.</p>
+        {% endif %}
+    </article>
+
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">High activity times</h2>
+        <p class="mt-1 text-xs text-slate-500">GROUP BY hour / time of day</p>
+        {% if busy_hours %}
+        <ul class="mt-5 flex flex-col gap-3">
+            {% for slot in busy_hours %}
+            <li class="grid grid-cols-[6.5rem_minmax(0,1fr)_2rem] items-center gap-3 text-sm">
+                <span class="text-slate-500">{{ slot.label }}</span>
+                <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div class="h-2 rounded-full bg-sky-500" style="width: {{ slot.pct or 0 }}%"></div>
+                </div>
+                <span class="text-right text-slate-700">{{ slot.count }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mt-8 text-center text-sm text-slate-500">No time data yet.</p>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

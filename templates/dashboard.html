@@ -1,130 +1,144 @@
-{% extends "layout.html" %}
+{% extends "app.html" %}
 
 {% block title %}Dashboard · Sentinel{% endblock %}
 
-{% block content %}
-<div class="min-h-screen bg-slate-50">
-    <div class="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top_left,_#93c5fd_0%,_transparent_40%),radial-gradient(circle_at_top_right,_#bfdbfe_0%,_transparent_45%)]"></div>
+{# stats: officers, incidents, criminals, jails
+   incidents: IRID, Date, location, AccusedName
+   criminals: CID, Name, Crime, Age #}
 
-    <header class="relative border-b border-blue-100/80 bg-white/80 backdrop-blur">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-            <div class="flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25">S</span>
-                <div>
-                    <p class="text-sm font-semibold tracking-tight text-slate-800">Sentinel</p>
-                    <p class="text-xs text-slate-500">Police dashboard</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <p class="hidden text-sm text-slate-500 sm:block">Signed in as <span class="font-medium text-slate-800">{{ user_name }}</span></p>
-                <a href="{{ url_for('logout') }}" class="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
-                    Sign out
-                </a>
-            </div>
-        </div>
-    </header>
+{% set stats = stats if stats is defined else {"officers": 8, "incidents": 24, "criminals": 17, "jails": 3} %}
+{% set incidents = incidents if incidents is defined else [
+    {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin"},
+    {"IRID": 11, "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury"},
+    {"IRID": 10, "Date": "2026-08-09", "location": "Mirpur-10", "AccusedName": "Unknown"},
+] %}
+{% set criminals = criminals if criminals is defined else [
+    {"CID": 101, "Name": "Karim Uddin", "Crime": "Theft", "Age": 31},
+    {"CID": 102, "Name": "Nabila Chowdhury", "Crime": "Fraud", "Age": 27},
+] %}
 
-    <main class="relative mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div class="mb-8">
-            <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Overview</p>
-            <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Dashboard</h1>
-            <p class="mt-2 text-sm text-slate-500">A snapshot of officers, cases, and custody across Sentinel.</p>
-        </div>
-
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-                <p class="text-sm font-medium text-slate-500">Officers</p>
-                <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.officers }}</p>
-                <p class="mt-1 text-xs text-slate-400">Active police records</p>
-            </article>
-            <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-                <p class="text-sm font-medium text-slate-500">Incident reports</p>
-                <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.incidents }}</p>
-                <p class="mt-1 text-xs text-slate-400">Filed cases</p>
-            </article>
-            <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-                <p class="text-sm font-medium text-slate-500">Criminals</p>
-                <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.criminals }}</p>
-                <p class="mt-1 text-xs text-slate-400">In custody records</p>
-            </article>
-            <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-                <p class="text-sm font-medium text-slate-500">Jails</p>
-                <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.jails }}</p>
-                <p class="mt-1 text-xs text-slate-400">Facilities on file</p>
-            </article>
-        </section>
-
-        <section class="mt-6 grid gap-6 lg:grid-cols-2">
-            <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
-                <div class="border-b border-slate-100 px-5 py-4">
-                    <h2 class="font-semibold text-slate-800">Recent incidents</h2>
-                    <p class="text-xs text-slate-500">Latest reports from the case file</p>
-                </div>
-                {% if incidents %}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr>
-                                <th class="px-5 py-3 font-medium">ID</th>
-                                <th class="px-5 py-3 font-medium">Date</th>
-                                <th class="px-5 py-3 font-medium">Location</th>
-                                <th class="px-5 py-3 font-medium">Accused</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            {% for incident in incidents %}
-                            <tr class="text-slate-700">
-                                <td class="px-5 py-3 font-medium">{{ incident.IRID }}</td>
-                                <td class="px-5 py-3">{{ incident.Date or "—" }}</td>
-                                <td class="px-5 py-3">{{ incident.location or "—" }}</td>
-                                <td class="px-5 py-3">{{ incident.AccusedName or "—" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="px-5 py-10 text-center text-sm text-slate-500">
-                    No incident reports yet.
-                </div>
-                {% endif %}
-            </article>
-
-            <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
-                <div class="border-b border-slate-100 px-5 py-4">
-                    <h2 class="font-semibold text-slate-800">Custody</h2>
-                    <p class="text-xs text-slate-500">People currently on record</p>
-                </div>
-                {% if criminals %}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr>
-                                <th class="px-5 py-3 font-medium">ID</th>
-                                <th class="px-5 py-3 font-medium">Name</th>
-                                <th class="px-5 py-3 font-medium">Crime</th>
-                                <th class="px-5 py-3 font-medium">Age</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            {% for criminal in criminals %}
-                            <tr class="text-slate-700">
-                                <td class="px-5 py-3 font-medium">{{ criminal.CID }}</td>
-                                <td class="px-5 py-3">{{ criminal.Name }}</td>
-                                <td class="px-5 py-3">{{ criminal.Crime or "—" }}</td>
-                                <td class="px-5 py-3">{{ criminal.Age or "—" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="px-5 py-10 text-center text-sm text-slate-500">
-                    No criminal records yet.
-                </div>
-                {% endif %}
-            </article>
-        </section>
-    </main>
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Overview</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Police dashboard</h1>
+    <p class="mt-2 text-sm text-slate-500">Open a desk to manage records, cases, and custody.</p>
 </div>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm font-medium text-slate-500">Officers</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.officers }}</p>
+        <p class="mt-1 text-xs text-slate-400">Police profiles</p>
+    </article>
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm font-medium text-slate-500">Incidents</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.incidents }}</p>
+        <p class="mt-1 text-xs text-slate-400">Filed reports</p>
+    </article>
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm font-medium text-slate-500">Criminals</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.criminals }}</p>
+        <p class="mt-1 text-xs text-slate-400">Profiles on file</p>
+    </article>
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <p class="text-sm font-medium text-slate-500">Jails</p>
+        <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-800">{{ stats.jails }}</p>
+        <p class="mt-1 text-xs text-slate-400">Facilities</p>
+    </article>
+</section>
+
+<section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <a href="{{ url_for('criminals') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Criminal profiles</p>
+        <p class="mt-1 text-sm text-slate-500">Add, edit, and assign custody.</p>
+    </a>
+    <a href="{{ url_for('jails') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Jail management</p>
+        <p class="mt-1 text-sm text-slate-500">Capacity, inmates, and jailors.</p>
+    </a>
+    <a href="{{ url_for('officers') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Police profiles</p>
+        <p class="mt-1 text-sm text-slate-500">View officers and supervise a team.</p>
+    </a>
+    <a href="{{ url_for('proceedings') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Legal proceedings</p>
+        <p class="mt-1 text-sm text-slate-500">Judge, evidence, and case files.</p>
+    </a>
+    <a href="{{ url_for('analytics') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Analytics</p>
+        <p class="mt-1 text-sm text-slate-500">Hot zones and busy hours.</p>
+    </a>
+    <a href="{{ url_for('incidents') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Incident reports</p>
+        <p class="mt-1 text-sm text-slate-500">Review and assign filed reports.</p>
+    </a>
+</section>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-2">
+    <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+        <div class="border-b border-slate-100 px-5 py-4">
+            <h2 class="font-semibold text-slate-800">Recent incidents</h2>
+            <p class="text-xs text-slate-500">Latest reports from the case file</p>
+        </div>
+        {% if incidents %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3 font-medium">ID</th>
+                        <th class="px-5 py-3 font-medium">Date</th>
+                        <th class="px-5 py-3 font-medium">Location</th>
+                        <th class="px-5 py-3 font-medium">Accused</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for incident in incidents %}
+                    <tr class="text-slate-700">
+                        <td class="px-5 py-3 font-medium">{{ incident.IRID }}</td>
+                        <td class="px-5 py-3">{{ incident.Date or "—" }}</td>
+                        <td class="px-5 py-3">{{ incident.location or "—" }}</td>
+                        <td class="px-5 py-3">{{ incident.AccusedName or "—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-10 text-center text-sm text-slate-500">No incident reports yet.</div>
+        {% endif %}
+    </article>
+
+    <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+        <div class="border-b border-slate-100 px-5 py-4">
+            <h2 class="font-semibold text-slate-800">Custody</h2>
+            <p class="text-xs text-slate-500">People currently on record</p>
+        </div>
+        {% if criminals %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3 font-medium">ID</th>
+                        <th class="px-5 py-3 font-medium">Name</th>
+                        <th class="px-5 py-3 font-medium">Crime</th>
+                        <th class="px-5 py-3 font-medium">Age</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for criminal in criminals %}
+                    <tr class="text-slate-700">
+                        <td class="px-5 py-3 font-medium">{{ criminal.CID }}</td>
+                        <td class="px-5 py-3">{{ criminal.Name }}</td>
+                        <td class="px-5 py-3">{{ criminal.Crime or "—" }}</td>
+                        <td class="px-5 py-3">{{ criminal.Age or "—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-10 text-center text-sm text-slate-500">No criminal records yet.</div>
+        {% endif %}
+    </article>
+</section>
 {% endblock %}

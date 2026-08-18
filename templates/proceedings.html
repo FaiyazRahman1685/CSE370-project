@@ -1,0 +1,62 @@
+{% extends "app.html" %}
+
+{% block title %}Legal proceedings · Sentinel{% endblock %}
+
+{# cases: IRID, Judge, Evidence, Date, location, AccusedName, criminal_count #}
+
+{% set cases = cases if cases is defined else [
+    {"IRID": 12, "Judge": "Hon. S. Ahmed", "Evidence": "CCTV stills, witness statement", "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin", "criminal_count": 1},
+    {"IRID": 11, "Judge": "Hon. R. Khan", "Evidence": "Bank records", "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury", "criminal_count": 1},
+    {"IRID": 9, "Judge": None, "Evidence": None, "Date": "2026-07-28", "location": "Mirpur-10", "AccusedName": "Unknown", "criminal_count": 0},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Court</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Legal proceedings</h1>
+    <p class="mt-2 text-sm text-slate-500">One file per criminal case. Open a row to set judge and evidence.</p>
+</div>
+
+<article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+    {% if cases %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                    <th class="px-5 py-3 font-medium">IRID</th>
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Location</th>
+                    <th class="px-5 py-3 font-medium">Accused</th>
+                    <th class="px-5 py-3 font-medium">Judge</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for case in cases %}
+                <tr class="text-slate-700">
+                    <td class="px-5 py-3 font-medium">{{ case.IRID }}</td>
+                    <td class="px-5 py-3">{{ case.Date or "—" }}</td>
+                    <td class="px-5 py-3">{{ case.location or "—" }}</td>
+                    <td class="px-5 py-3">{{ case.AccusedName or "—" }}</td>
+                    <td class="px-5 py-3">{{ case.Judge or "Unassigned" }}</td>
+                    <td class="px-5 py-3">
+                        {% if case.Judge %}
+                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">In court</span>
+                        {% else %}
+                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                        <a href="{{ url_for('proceeding_detail', irid=case.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="px-5 py-10 text-center text-sm text-slate-500">No criminal cases yet.</p>
+    {% endif %}
+</article>
+{% endblock %}

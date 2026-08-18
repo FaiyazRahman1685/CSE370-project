@@ -1,0 +1,128 @@
+{% extends "app.html" %}
+
+{% block title %}Criminals · Sentinel{% endblock %}
+
+{# criminals: CID, Name, Age, Crime, Gender, Nationality, jail_name, time_sentenced
+   jails: JID, Name  (for the assign-jail dropdown) #}
+
+{% set criminals = criminals if criminals is defined else [
+    {"CID": 101, "Name": "Karim Uddin", "Age": 31, "Crime": "Theft", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central", "time_sentenced": "5 years"},
+    {"CID": 102, "Name": "Nabila Chowdhury", "Age": 27, "Crime": "Fraud", "Gender": "F", "Nationality": "Bangladeshi", "jail_name": "Kashimpur", "time_sentenced": "3 years"},
+    {"CID": 103, "Name": "Faruk Hossain", "Age": 42, "Crime": "Robbery", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central", "time_sentenced": "8 years"},
+] %}
+{% set jails = jails if jails is defined else [
+    {"JID": 1, "Name": "Dhaka Central Jail"},
+    {"JID": 2, "Name": "Kashimpur Central Jail"},
+] %}
+
+{% block page %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Records</p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Criminal profiles</h1>
+        <p class="mt-2 text-sm text-slate-500">Create and update custody records.</p>
+    </div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+        <div class="border-b border-slate-100 px-5 py-4">
+            <h2 class="font-semibold text-slate-800">All profiles</h2>
+            <p class="text-xs text-slate-500">{{ criminals|length }} on file</p>
+        </div>
+        {% if criminals %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3 font-medium">ID</th>
+                        <th class="px-5 py-3 font-medium">Name</th>
+                        <th class="px-5 py-3 font-medium">Crime</th>
+                        <th class="px-5 py-3 font-medium">Age</th>
+                        <th class="px-5 py-3 font-medium">Jail</th>
+                        <th class="px-5 py-3 font-medium"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for criminal in criminals %}
+                    <tr class="text-slate-700">
+                        <td class="px-5 py-3 font-medium">{{ criminal.CID }}</td>
+                        <td class="px-5 py-3">{{ criminal.Name }}</td>
+                        <td class="px-5 py-3">{{ criminal.Crime or "—" }}</td>
+                        <td class="px-5 py-3">{{ criminal.Age or "—" }}</td>
+                        <td class="px-5 py-3">{{ criminal.jail_name or "—" }}</td>
+                        <td class="px-5 py-3 text-right">
+                            <a href="{{ url_for('criminal_detail', cid=criminal.CID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-10 text-center text-sm text-slate-500">No criminal profiles yet.</div>
+        {% endif %}
+    </article>
+
+    <article class="h-fit rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">Add profile</h2>
+        <p class="mt-1 text-xs text-slate-500">Inserts into Criminal. Wire this form to your SQL.</p>
+        <form action="{{ url_for('criminals') }}" method="post" class="mt-5 flex flex-col gap-4">
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Name
+                <input type="text" name="Name" required class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Age
+                    <input type="number" name="Age" min="0" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                </label>
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Height
+                    <input type="number" name="Height" step="0.1" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                </label>
+            </div>
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Crime
+                <select name="Crime" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                    <option value="">Select category</option>
+                    <option>Theft</option>
+                    <option>Fraud</option>
+                    <option>Assault</option>
+                    <option>Robbery</option>
+                    <option>Drug offense</option>
+                    <option>Other</option>
+                </select>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Gender
+                    <select name="Gender" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                        <option value="">—</option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </label>
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Nationality
+                    <input type="text" name="Nationality" value="Bangladeshi" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                </label>
+            </div>
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Jail
+                <select name="JID" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                    <option value="">Unassigned</option>
+                    {% for jail in jails %}
+                    <option value="{{ jail.JID }}">{{ jail.Name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Time sentenced
+                <input type="text" name="time_sentenced" placeholder="e.g. 5 years" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </label>
+            <button type="submit" class="h-11 rounded-xl bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Save profile</button>
+        </form>
+    </article>
+</div>
+{% endblock %}

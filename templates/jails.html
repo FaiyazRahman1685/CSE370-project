@@ -1,0 +1,68 @@
+{% extends "app.html" %}
+
+{% block title %}Jails · Sentinel{% endblock %}
+
+{# jails: JID, Name, Location, Capacity, occupancy, jailor_count #}
+
+{% set jails = jails if jails is defined else [
+    {"JID": 1, "Name": "Dhaka Central Jail", "Location": "Keraniganj", "Capacity": 400, "occupancy": 312, "jailor_count": 4},
+    {"JID": 2, "Name": "Kashimpur Central Jail", "Location": "Gazipur", "Capacity": 250, "occupancy": 180, "jailor_count": 2},
+    {"JID": 3, "Name": "Chittagong Central Jail", "Location": "Chattogram", "Capacity": 300, "occupancy": 210, "jailor_count": 3},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Facilities</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Jail management</h1>
+    <p class="mt-2 text-sm text-slate-500">Track capacity, inmates, and assigned jailors.</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid gap-4">
+        {% if jails %}
+            {% for jail in jails %}
+            {% set pct = ((jail.occupancy or 0) / jail.Capacity * 100) if jail.Capacity else 0 %}
+            <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="font-semibold text-slate-800">{{ jail.Name }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ jail.Location or "—" }} · {{ jail.jailor_count or 0 }} jailors</p>
+                    </div>
+                    <a href="{{ url_for('jail_detail', jid=jail.JID) }}" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">Manage</a>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-xs text-slate-500">
+                        <span>{{ jail.occupancy or 0 }} / {{ jail.Capacity or 0 }} occupied</span>
+                        <span>{{ pct|round(0) }}%</span>
+                    </div>
+                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full bg-blue-600" style="width: {{ [pct, 100]|min }}%"></div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+        <article class="rounded-2xl border border-blue-100 bg-white px-5 py-10 text-center text-sm text-slate-500">No jails on file.</article>
+        {% endif %}
+    </div>
+
+    <article class="h-fit rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">Add jail</h2>
+        <form action="{{ url_for('jails') }}" method="post" class="mt-5 flex flex-col gap-4">
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Name
+                <input type="text" name="Name" required class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </label>
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Location
+                <input type="text" name="Location" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </label>
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Capacity
+                <input type="number" name="Capacity" min="1" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </label>
+            <button type="submit" class="h-11 rounded-xl bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Save jail</button>
+        </form>
+    </article>
+</div>
+{% endblock %}

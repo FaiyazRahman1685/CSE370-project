@@ -1,0 +1,88 @@
+{% extends "app.html" %}
+
+{% block title %}Search · Sentinel{% endblock %}
+
+{# filters: crime, gender, nationality, jail_id  (echo back the submitted GET values)
+   crimes / nationalities / jails: dropdown options
+   results: CID, Name, Age, Crime, Gender, Nationality, jail_name #}
+
+{% set filters = filters if filters is defined else {"crime": "", "gender": "", "nationality": "", "jail_id": ""} %}
+{% set crimes = crimes if crimes is defined else ["Theft", "Fraud", "Assault", "Robbery", "Drug offense", "Other"] %}
+{% set nationalities = nationalities if nationalities is defined else ["Bangladeshi", "Other"] %}
+{% set jails = jails if jails is defined else [{"JID": 1, "Name": "Dhaka Central Jail"}, {"JID": 2, "Name": "Kashimpur Central Jail"}] %}
+{% set results = results if results is defined else [
+    {"CID": 101, "Name": "Karim Uddin", "Age": 31, "Crime": "Theft", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central Jail"},
+    {"CID": 103, "Name": "Faruk Hossain", "Age": 42, "Crime": "Robbery", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central Jail"},
+] %}
+
+{% block page %}
+<div class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Public records</p>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Criminal search</h1>
+    <p class="mt-2 text-sm text-slate-500">Filter by category. Results stay limited to public profile fields.</p>
+</div>
+
+<article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+    <form action="{{ url_for('search_criminals') }}" method="get" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+            Crime
+            <select name="crime" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <option value="">Any</option>
+                {% for crime in crimes %}
+                <option value="{{ crime }}" {% if filters.crime == crime %}selected{% endif %}>{{ crime }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+            Gender
+            <select name="gender" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <option value="">Any</option>
+                <option value="M" {% if filters.gender == "M" %}selected{% endif %}>M</option>
+                <option value="F" {% if filters.gender == "F" %}selected{% endif %}>F</option>
+            </select>
+        </label>
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+            Nationality
+            <select name="nationality" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <option value="">Any</option>
+                {% for nationality in nationalities %}
+                <option value="{{ nationality }}" {% if filters.nationality == nationality %}selected{% endif %}>{{ nationality }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+            Jail
+            <select name="jail_id" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <option value="">Any</option>
+                {% for jail in jails %}
+                <option value="{{ jail.JID }}" {% if filters.jail_id|string == jail.JID|string %}selected{% endif %}>{{ jail.Name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="sm:col-span-2 lg:col-span-4">
+            <button type="submit" class="h-11 rounded-xl bg-blue-600 px-5 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Search</button>
+        </div>
+    </form>
+</article>
+
+<section class="mt-6 grid gap-4 sm:grid-cols-2">
+    {% if results %}
+        {% for person in results %}
+        <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+            <p class="text-xs font-medium uppercase tracking-wide text-blue-600">{{ person.Crime or "Unspecified" }}</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-800">{{ person.Name }}</h2>
+            <dl class="mt-4 grid grid-cols-2 gap-2 text-sm text-slate-500">
+                <div>Age <span class="font-medium text-slate-800">{{ person.Age or "—" }}</span></div>
+                <div>Gender <span class="font-medium text-slate-800">{{ person.Gender or "—" }}</span></div>
+                <div>Nationality <span class="font-medium text-slate-800">{{ person.Nationality or "—" }}</span></div>
+                <div>Jail <span class="font-medium text-slate-800">{{ person.jail_name or "—" }}</span></div>
+            </dl>
+        </article>
+        {% endfor %}
+    {% else %}
+    <article class="rounded-2xl border border-blue-100 bg-white px-5 py-10 text-center text-sm text-slate-500 sm:col-span-2">
+        No matching public records.
+    </article>
+    {% endif %}
+</section>
+{% endblock %}

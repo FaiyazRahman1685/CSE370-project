@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% set role = role|default(session.get("role", "user")) %}
+{% set user_name = user_name|default(session.get("name", "Guest")) %}
+{% set path = request.path %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top_left,_#93c5fd_0%,_transparent_40%),radial-gradient(circle_at_top_right,_#bfdbfe_0%,_transparent_45%)]"></div>
+
+    <header class="relative border-b border-blue-100/80 bg-white/80 backdrop-blur">
+        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6">
+            <div class="flex items-center justify-between">
+                <a href="{{ url_for('dashboard') if role == 'police' else url_for('user_dashboard') }}" class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25">S</span>
+                    <div>
+                        <p class="text-sm font-semibold tracking-tight text-slate-800">Sentinel</p>
+                        <p class="text-xs text-slate-500">{{ "Police desk" if role == "police" else "Public portal" }}</p>
+                    </div>
+                </a>
+                <div class="flex items-center gap-3">
+                    <p class="hidden text-sm text-slate-500 sm:block">Signed in as <span class="font-medium text-slate-800">{{ user_name }}</span></p>
+                    <a href="{{ url_for('logout') }}" class="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+                        Sign out
+                    </a>
+                </div>
+            </div>
+
+            <nav class="-mx-1 flex gap-1 overflow-x-auto pb-1 text-sm font-medium">
+                {% macro nav_link(href, label, active) %}
+                <a
+                    href="{{ href }}"
+                    class="whitespace-nowrap rounded-xl px-3 py-2 transition {% if active %}bg-blue-600 text-white shadow-lg shadow-blue-600/25{% else %}text-slate-500 hover:bg-blue-50 hover:text-blue-700{% endif %}"
+                >{{ label }}</a>
+                {% endmacro %}
+                {% if role == "police" %}
+                    {{ nav_link(url_for("dashboard"), "Dashboard", path == "/dashboard") }}
+                    {{ nav_link(url_for("criminals"), "Criminals", path.startswith("/criminals")) }}
+                    {{ nav_link(url_for("jails"), "Jails", path.startswith("/jails")) }}
+                    {{ nav_link(url_for("officers"), "Officers", path.startswith("/officers")) }}
+                    {{ nav_link(url_for("proceedings"), "Cases", path.startswith("/proceedings")) }}
+                    {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
+                    {{ nav_link(url_for("incidents"), "Incidents", path.startswith("/incidents")) }}
+                {% else %}
+                    {{ nav_link(url_for("user_dashboard"), "Home", path == "/home") }}
+                    {{ nav_link(url_for("search_criminals"), "Search", path.startswith("/search")) }}
+                    {{ nav_link(url_for("jail_info"), "Jail info", path.startswith("/jail-info")) }}
+                    {{ nav_link(url_for("victim_cases"), "My cases", path.startswith("/my-cases")) }}
+                    {{ nav_link(url_for("report_incident"), "Report", path.startswith("/report")) }}
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="relative mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        {% if error %}
+        <p class="mb-6 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{{ error }}</p>
+        {% endif %}
+        {% if success %}
+        <p class="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-700">{{ success }}</p>
+        {% endif %}
+        {% block page %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
