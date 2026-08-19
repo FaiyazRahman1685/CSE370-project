@@ -58,7 +58,7 @@ def signup():
         ## to do: insert USER / POLICE
         
 
-@app.route("/login", methods=["POST","GET"	])
+@app.route("/login", methods=["POST","GET"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
@@ -67,12 +67,18 @@ def login():
     password = request.form.get("password", "")
     role = request.form.get("role", "user")
     ## to do: look up USER / POLICE and check password
+    db = get_db()
+    user = db.execute("SELECT * FROM USER WHERE username = ?", (username,)).fetchone()
+    if user:
+        real_password = user["password"]
+        if password == real_password:
+            session["loggedin_UID"] = user["UID"]
+            return redirect("/dashboard")
+        else:
+            return render_template("login.html", error="Invalid password")
+    else: 
+        return render_template("login.html", error="User not found ")
 
-    session["name"] = username or "Guest"
-    session["role"] = role if role in ("user", "police") else "user"
-    if session["role"] == "police":
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("user_dashboard"))
 
 
 @app.route("/logout")
