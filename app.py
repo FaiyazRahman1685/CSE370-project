@@ -25,21 +25,44 @@ def close_db(exception):
         db.close()
 
 
-def login_page(error=None, username="", role="user"):
-    return render_template("login.html", error=error, username=username, role=role)
 
+
+# --- Person 1: login, dashboards, incidents, analytics ---
+# docs/person-1-login-incidents.md
 
 @app.route("/")
 def index():
-    if session.get("uid") or session.get("role"):
-        if session.get("role") == "police":
-            return redirect(url_for("dashboard"))
-        return redirect(url_for("user_dashboard"))
-    return login_page()
+    if session.get("uid"):
+        return redirect("/dashboard")
+    return redirect("/login")
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/signup", methods=["GET","POST"])
+def signup():
+    if request.method == "GET":
+        return render_template("signup.html")
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        role = request.form.get("role")
+        age = request.form.get("age")
+        gender = request.form.get("gender")
+        phone = request.form.get("phone")
+        if role == "police":
+            rank = request.form.get("rank")
+            supervisor = request.form.get("supervisor")
+            department = request.form.get("department")
+            patrol_area = request.form.get("patrol_area")
+            badge_no = request.form.get("badge_no")
+        db = get_db()
+        ## to do: insert USER / POLICE
+        
+
+@app.route("/login", methods=["POST","GET"	])
 def login():
+    if request.method == "GET":
+        return render_template("login.html")
+    if request.method == "POST":
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "")
     role = request.form.get("role", "user")
@@ -58,66 +81,16 @@ def logout():
     return redirect(url_for("index"))
 
 
-# --- Police ---
-
 @app.route("/dashboard")
 def dashboard():
     ## to do: counts + recent incidents + recent criminals
     return render_template("dashboard.html")
 
 
-@app.route("/criminals", methods=["GET", "POST"])
-def criminals():
-    ## to do: GET list Criminal; POST insert Criminal
-    return render_template("criminals.html")
-
-
-@app.route("/criminals/<int:cid>", methods=["GET", "POST"])
-def criminal_detail(cid):
-    ## to do: GET one Criminal + arrests + involvement; POST update
-    return render_template("criminal_detail.html")
-
-
-@app.route("/jails", methods=["GET", "POST"])
-def jails():
-    ## to do: GET Jail + occupancy; POST insert Jail
-    return render_template("jails.html")
-
-
-@app.route("/jails/<int:jid>", methods=["GET", "POST"])
-def jail_detail(jid):
-    ## to do: GET jail + inmates + jailors; POST update / assign jailor
-    return render_template("jail_detail.html")
-
-
-@app.route("/officers")
-def officers():
-    ## to do: SELECT police profiles joined with USER
-    return render_template("officers.html")
-
-
-@app.route("/officers/<int:uid>", methods=["GET", "POST"])
-def officer_detail(uid):
-    ## to do: GET officer + team; POST update POLICE/USER (supervisor)
-    return render_template("officer_detail.html")
-
-
-@app.route("/proceedings")
-def proceedings():
-    ## to do: list Incident Reports left join Criminal cases
-    return render_template("proceedings.html")
-
-
-@app.route("/proceedings/<int:irid>", methods=["GET", "POST"])
-def proceeding_detail(irid):
-    ## to do: GET case file; POST update Judge/Evidence, link criminals, assign officers
-    return render_template("proceeding_detail.html")
-
-
-@app.route("/analytics")
-def analytics():
-    ## to do: GROUP BY Incident Location and by time-of-day
-    return render_template("analytics.html")
+@app.route("/home")
+def user_dashboard():
+    ## to do: this user's Incident Reports
+    return render_template("user_dashboard.html")
 
 
 @app.route("/incidents")
@@ -132,18 +105,64 @@ def incident_detail(irid):
     return render_template("incident_detail.html")
 
 
-# --- Civilian ---
+@app.route("/report", methods=["GET", "POST"])
+def report_incident():
+    ## to do: POST insert Incident Reports
+    return render_template("report_incident.html")
 
-@app.route("/home")
-def user_dashboard():
-    ## to do: this user's Incident Reports
-    return render_template("user_dashboard.html")
+
+@app.route("/analytics")
+def analytics():
+    ## to do: GROUP BY Incident Location and by time-of-day
+    return render_template("analytics.html")
+
+
+# --- Person 2: criminals, search, court cases ---
+# docs/person-2-criminals-cases.md
+
+@app.route("/criminals", methods=["GET", "POST"])
+def criminals():
+    ## to do: GET list Criminal; POST insert Criminal
+    return render_template("criminals.html")
+
+
+@app.route("/criminals/<int:cid>", methods=["GET", "POST"])
+def criminal_detail(cid):
+    ## to do: GET one Criminal + arrests + involvement; POST update
+    return render_template("criminal_detail.html")
 
 
 @app.route("/search")
 def search_criminals():
     ## to do: filter Criminal by crime / gender / nationality / jail
     return render_template("search.html")
+
+
+@app.route("/proceedings")
+def proceedings():
+    ## to do: list Incident Reports left join Criminal cases
+    return render_template("proceedings.html")
+
+
+@app.route("/proceedings/<int:irid>", methods=["GET", "POST"])
+def proceeding_detail(irid):
+    ## to do: GET case file; POST update Judge/Evidence, link criminals, assign officers
+    return render_template("proceeding_detail.html")
+
+
+# --- Person 3: jails, officers, victim cases ---
+# docs/person-3-jails-officers.md
+
+@app.route("/jails", methods=["GET", "POST"])
+def jails():
+    ## to do: GET Jail + occupancy; POST insert Jail
+    return render_template("jails.html")
+
+
+@app.route("/jails/<int:jid>", methods=["GET", "POST"])
+def jail_detail(jid):
+    ## to do: GET jail + inmates + jailors; POST update / assign jailor
+    return render_template("jail_detail.html")
 
 
 @app.route("/jail-info")
@@ -158,16 +177,22 @@ def jail_info_detail(jid):
     return render_template("jail_info_detail.html")
 
 
+@app.route("/officers")
+def officers():
+    ## to do: SELECT police profiles joined with USER
+    return render_template("officers.html")
+
+
+@app.route("/officers/<int:uid>", methods=["GET", "POST"])
+def officer_detail(uid):
+    ## to do: GET officer + team; POST update POLICE/USER (supervisor)
+    return render_template("officer_detail.html")
+
+
 @app.route("/my-cases", methods=["GET", "POST"])
 def victim_cases():
     ## to do: GET this victim's cases; POST Incident Reports + Targeted + Criminal cases
     return render_template("victim_cases.html")
-
-
-@app.route("/report", methods=["GET", "POST"])
-def report_incident():
-    ## to do: POST insert Incident Reports
-    return render_template("report_incident.html")
 
 
 if __name__ == "__main__":
