@@ -6,7 +6,7 @@ import random
 app = Flask(__name__)
 
 
-app.secret_key = "sentinel-dev-key"
+
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config["DATABASE"] = "database.db"
