@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, g, session
 import sqlite3
+import random
 
 app = Flask(__name__)
 
@@ -17,6 +18,19 @@ def get_db():
         g.db.row_factory = sqlite3.Row
     return g.db
 
+def check_login():
+    if session.get("loggedin_UID") is None:
+        return False
+    return True
+    
+
+def generate_uid():
+    while True:
+        uid = random.randint(1000, 9999)
+        db = get_db()
+        user = db.execute("SELECT * FROM USER WHERE UID = ?", (uid,)).fetchone()
+        if user is None:
+            return uid
 
 @app.teardown_appcontext
 def close_db(exception):
@@ -32,7 +46,7 @@ def close_db(exception):
 
 @app.route("/")
 def index():
-    if session.get("uid"):
+    if session.get("loggedin_UID"):
         return redirect("/dashboard")
     return redirect("/login")
 
@@ -48,31 +62,42 @@ def signup():
         age = request.form.get("age")
         gender = request.form.get("gender")
         phone = request.form.get("phone")
+        uid = generate_uid()
+        db = get_db()
+        db.execute("insert into user (UID, name, password, age, gender, phone, role) values (?, ?, ?, ?, ?, ?, ?)", (uid, username, password, age, gender, phone, role))
+        
         if role == "police":
             rank = request.form.get("rank")
             supervisor = request.form.get("supervisor")
             department = request.form.get("department")
             patrol_area = request.form.get("patrol_area")
             badge_no = request.form.get("badge_no")
-        db = get_db()
-        ## to do: insert USER / POLICE
-        
+            db.execute("insert into police (UID, rank, supervisor, department, patrol_area, badge_no) values (?, ?, ?, ?, ?, ?)", (uid, rank, supervisor, department, patrol_area, badge_no))
 
-@app.route("/login", methods=["POST","GET"	])
+        db.commit()
+        return redirect("/login")
+        
+@app.route("/login", methods=["POST","GET"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
-    username = request.form.get("username", "").strip()
-    password = request.form.get("password", "")
-    role = request.form.get("role", "user")
-    ## to do: look up USER / POLICE and check password
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        ## to do: look up USER / POLICE and check password
+        db = get_db()
+        user = db.execute("SELECT * FROM USER WHERE name = ?", (username,)).fetchone()
+        if user:
+            real_password = user["password"]
+            if password == real_password:
+                session["loggedin_UID"] = user["UID"]
+                session["role"] = user["role"]
+                return redirect("/dashboard")
+            else:
+                return render_template("login.html", error="Invalid password")
+        else: 
+            return render_template("login.html", error="User not found ")
 
-    session["name"] = username or "Guest"
-    session["role"] = role if role in ("user", "police") else "user"
-    if session["role"] == "police":
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("user_dashboard"))
 
 
 @app.route("/logout")
@@ -84,7 +109,16 @@ def logout():
 @app.route("/dashboard")
 def dashboard():
     ## to do: counts + recent incidents + recent criminals
-    return render_template("dashboard.html")
+    if not check_login():
+        return redirect("/login")
+    role = session.get("role")
+    user_id = session.get("loggedin_UID")
+    db = get_db()
+    user = db.execute("SELECT * FROM USER WHERE UID = ?", (user_id,)).fetchone()
+    if role == "police":
+        return render_template("dashboard.html", user=user)
+    else:
+        return render_template("user_dashboard.html", user=user)
 
 
 @app.route("/home")

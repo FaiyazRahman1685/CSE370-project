@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+
+{% block title %}Sign up · Sentinel{% endblock %}
+
+{% block content %}
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_#93c5fd_0%,_transparent_40%),radial-gradient(circle_at_bottom_right,_#bfdbfe_0%,_transparent_45%)]"></div>
+    <div class="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-blue-200/60 blur-3xl"></div>
+    <div class="pointer-events-none absolute -right-16 bottom-10 h-64 w-64 rounded-full bg-sky-200/50 blur-3xl"></div>
+
+    <div class="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-2xl shadow-blue-200/50 md:grid-cols-2">
+        <section class="relative flex flex-col justify-between bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-10 text-white">
+            <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10"></div>
+            <div class="absolute -bottom-16 -left-8 h-48 w-48 rounded-full bg-sky-300/20"></div>
+
+            <div class="relative">
+                <p class="mb-8 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium tracking-wide uppercase">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-200"></span>
+                    New account
+                </p>
+                <h1 class="text-4xl font-semibold tracking-tight">Join Sentinel</h1>
+                <p class="mt-4 max-w-xs text-sm leading-relaxed text-blue-50">
+                    Create a civilian account to report incidents, or register as an officer to manage cases and custody.
+                </p>
+            </div>
+
+            <p class="relative mt-12 text-xs text-blue-100/80">
+                Already registered? Sign in with your username and password.
+            </p>
+        </section>
+
+        <section class="flex max-h-[90vh] flex-col justify-center overflow-y-auto bg-white p-8 sm:p-10">
+            <h2 class="text-2xl font-semibold text-slate-800">Create an account</h2>
+            <p class="mt-1 text-sm text-slate-500">Fill in your details to get started.</p>
+
+            <form action="/signup" method="post" class="mt-8 flex flex-col gap-5">
+                <fieldset>
+                    <legend class="mb-1.5 text-sm font-medium text-slate-700">Register as</legend>
+                    <div class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="role" value="user" class="peer sr-only" checked onchange="togglePoliceFields()">
+                            <span class="flex h-10 items-center justify-center rounded-lg text-sm font-medium text-slate-500 transition peer-checked:bg-white peer-checked:text-blue-700 peer-checked:shadow-sm">Civilian</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="role" value="police" class="peer sr-only" onchange="togglePoliceFields()">
+                            <span class="flex h-10 items-center justify-center rounded-lg text-sm font-medium text-slate-500 transition peer-checked:bg-white peer-checked:text-blue-700 peer-checked:shadow-sm">Police</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Username
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Choose a username"
+                        required
+                        class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    >
+                </label>
+
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Password
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Create a password"
+                        required
+                        class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    >
+                </label>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Age
+                        <input
+                            type="number"
+                            name="age"
+                            min="18"
+                            max="99"
+                            placeholder="18"
+                            required
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Gender
+                        <select
+                            name="gender"
+                            required
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                            <option value="" disabled selected>Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
+                        </select>
+                    </label>
+                </div>
+
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Phone
+                    <input
+                        type="tel"
+                        name="phone"
+                        placeholder="01XXXXXXXXX"
+                        required
+                        class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    >
+                </label>
+
+                <div id="police-fields" class="hidden flex flex-col gap-5">
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Badge number
+                        <input
+                            type="text"
+                            name="badge_no"
+                            placeholder="BD-1042"
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Rank
+                        <input
+                            type="text"
+                            name="rank"
+                            placeholder="Inspector"
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Department
+                        <input
+                            type="text"
+                            name="department"
+                            placeholder="Investigation"
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Patrol area
+                        <input
+                            type="text"
+                            name="patrol_area"
+                            placeholder="Gulshan"
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Supervisor UID
+                        <input
+                            type="text"
+                            name="supervisor"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="Optional"
+                            class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
+                </div>
+
+                <button
+                    type="submit"
+                    class="mt-1 h-11 rounded-xl bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+                >
+                    Create account
+                </button>
+            </form>
+
+            <p class="mt-6 text-sm text-slate-500">
+                Already have an account?
+                <a href="/login" class="font-medium text-blue-600 hover:text-blue-700">Sign in</a>
+            </p>
+        </section>
+    </div>
+</div>
+<script>
+function togglePoliceFields() {
+    var isPolice = document.querySelector('input[name="role"]:checked').value === "police";
+    var fields = document.getElementById("police-fields");
+    fields.classList.toggle("hidden", !isPolice);
+    fields.querySelectorAll("input:not([name='supervisor'])").forEach(function (input) {
+        input.required = isPolice;
+    });
+}
+togglePoliceFields();
+</script>
+{% endblock %}

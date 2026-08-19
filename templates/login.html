@@ -31,26 +31,12 @@
 
         <section class="flex flex-col justify-center bg-white p-8 sm:p-10">
             <h2 class="text-2xl font-semibold text-slate-800">Welcome back</h2>
-            <p class="mt-1 text-sm text-slate-500">Sign in as a civilian or a police officer.</p>
+            <p class="mt-1 text-sm text-slate-500">Enter your credentials to continue.</p>
             {% if error %}
             <p class="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
             {% endif %}
 
             <form action="/login" method="post" class="mt-8 flex flex-col gap-5">
-                <fieldset>
-                    <legend class="mb-1.5 text-sm font-medium text-slate-700">Sign in as</legend>
-                    <div class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="role" value="user" class="peer sr-only" {% if role != "police" %}checked{% endif %}>
-                            <span class="flex h-10 items-center justify-center rounded-lg text-sm font-medium text-slate-500 transition peer-checked:bg-white peer-checked:text-blue-700 peer-checked:shadow-sm">Civilian</span>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="role" value="police" class="peer sr-only" {% if role == "police" %}checked{% endif %}>
-                            <span class="flex h-10 items-center justify-center rounded-lg text-sm font-medium text-slate-500 transition peer-checked:bg-white peer-checked:text-blue-700 peer-checked:shadow-sm">Police</span>
-                        </label>
-                    </div>
-                </fieldset>
-
                 <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
                     Username
                     <input
@@ -60,7 +46,7 @@
                         value="{{ username or '' }}"
                         placeholder="Enter your username"
                         required
-                        class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     >
                 </label>
 
@@ -72,7 +58,7 @@
                         id="password"
                         placeholder="Enter your password"
                         required
-                        class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     >
                 </label>
 
@@ -84,9 +70,9 @@
                 </button>
             </form>
 
-            <p class="mt-6 text-xs leading-relaxed text-slate-400">
-                Demo civilian: <span class="font-medium text-slate-500">fatima</span> / user123
-                · police: <span class="font-medium text-slate-500">rahman</span> / police123
+            <p class="mt-6 text-sm text-slate-500">
+                Don't have an account?
+                <a href="/signup" class="font-medium text-blue-600 hover:text-blue-700">Sign up</a>
             </p>
         </section>
     </div>
