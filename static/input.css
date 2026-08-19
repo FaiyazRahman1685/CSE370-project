@@ -1,2 +1,22 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+@layer base {
+    input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
+    select,
+    textarea {
+        background-color: #ffffff;
+        color: #0f172a;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    textarea:-webkit-autofill {
+        -webkit-text-fill-color: #0f172a !important;
+        -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+        box-shadow: 0 0 0 1000px #ffffff inset !important;
+        caret-color: #0f172a;
+    }
+}

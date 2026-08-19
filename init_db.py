@@ -24,6 +24,7 @@ CREATE TABLE USER (
     phone TEXT,
     age INTEGER,
     gender TEXT,
+    role TEXT,
     name TEXT NOT NULL,
     password TEXT NOT NULL
 );
@@ -37,9 +38,9 @@ CREATE TABLE Jail (
 
 CREATE TABLE POLICE (
     UID INTEGER PRIMARY KEY,
-    "Badge No" TEXT UNIQUE,
-    "patrol area" TEXT,
-    "number of arrests" INTEGER DEFAULT 0,
+    badge_no TEXT UNIQUE,
+    patrol_area TEXT,
+    number_of_arrests INTEGER DEFAULT 0,
     department TEXT,
     rank TEXT,
     supervisor INTEGER,
@@ -56,7 +57,7 @@ CREATE TABLE "Incident Reports" (
     IRID INTEGER PRIMARY KEY,
     Date TEXT,
     Description TEXT,
-    "Incident Location" TEXT,
+    incident_location TEXT,
     AccusedName TEXT,
     ReportedUID INTEGER,
     FOREIGN KEY (ReportedUID) REFERENCES USER(UID)
@@ -71,7 +72,7 @@ CREATE TABLE Criminal (
     Gender TEXT,
     Nationality TEXT,
     JID INTEGER,
-    "Time sentenced" TEXT,
+    time_sentenced TEXT,
     FOREIGN KEY (JID) REFERENCES Jail(JID)
 );
 
@@ -126,11 +127,11 @@ CREATE TABLE "Criminal involvement" (
 
 
 SEED = """
-INSERT INTO USER (UID, phone, age, gender, name, password) VALUES
-    (1, '01700000001', 34, 'M', 'rahman', 'police123'),
-    (2, '01700000002', 28, 'F', 'fatima', 'user123');
+INSERT INTO USER (UID, phone, age, gender, role, name, password) VALUES
+    (1, '01700000001', 34, 'M', 'police', 'rahman', 'police123'),
+    (2, '01700000002', 28, 'F', 'user', 'fatima', 'user123');
 
-INSERT INTO POLICE (UID, "Badge No", "patrol area", "number of arrests", department, rank)
+INSERT INTO POLICE (UID, badge_no, patrol_area, number_of_arrests, department, rank)
 VALUES (1, 'BD-1042', 'Gulshan', 12, 'Investigation', 'Inspector');
 
 INSERT INTO Victim (UID) VALUES (2);
