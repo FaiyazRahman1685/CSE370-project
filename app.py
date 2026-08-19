@@ -121,11 +121,6 @@ def dashboard():
         return render_template("user_dashboard.html", user=user)
 
 
-@app.route("/home")
-def user_dashboard():
-    ## to do: this user's Incident Reports
-    return render_template("user_dashboard.html")
-
 
 @app.route("/incidents")
 def incidents():

@@ -11,7 +11,7 @@
     <header class="relative border-b border-blue-100/80 bg-white/80 backdrop-blur">
         <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6">
             <div class="flex items-center justify-between">
-                <a href="{{ url_for('dashboard') if role == 'police' else url_for('user_dashboard') }}" class="flex items-center gap-3">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center gap-3">
                     <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25">S</span>
                     <div>
                         <p class="text-sm font-semibold tracking-tight text-slate-800">Sentinel</p>
@@ -42,7 +42,7 @@
                     {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
                     {{ nav_link(url_for("incidents"), "Incidents", path.startswith("/incidents")) }}
                 {% else %}
-                    {{ nav_link(url_for("user_dashboard"), "Home", path == "/home") }}
+                    {{ nav_link(url_for("dashboard"), "Home", path == "/dashboard") }}
                     {{ nav_link(url_for("search_criminals"), "Search", path.startswith("/search")) }}
                     {{ nav_link(url_for("jail_info"), "Jail info", path.startswith("/jail-info")) }}
                     {{ nav_link(url_for("victim_cases"), "My cases", path.startswith("/my-cases")) }}
