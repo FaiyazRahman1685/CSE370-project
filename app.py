@@ -152,12 +152,30 @@ def analytics():
 @app.route("/criminals", methods=["GET", "POST"])
 def criminals():
     ## to do: GET list Criminal; POST insert Criminal
-    return render_template("criminals.html")
+    if request.method == "GET":
+        db = get_db()
+        criminal = db.execute("SELECT * FROM CRIMINAL").fetchall()
+        jail = db.execute("SELECT * FROM JAIL").fetchall()
+        return render_template("criminals.html", criminals=criminal)
+
+    if request.method == "POST":
+        db = get_db()
+        name = request.form.get("Name").strip()
+        age = request.form.get("Age")
+        gender = request.form.get("Gender")
+        nationality = request.form.get("Nationality")
+        crime = request.form.get("Crime")
+        jail_id = request.form.get("JID")
+        time_sentenced = request.form.get("time_sentenced")
+        db.execute("INSERT INTO CRIMINAL (Name, Age, Gender, Nationality, Crime, JID, time_sentenced) VALUES (?, ?, ?, ?, ?, ?, ?)", (name, age, gender, nationality, crime, jail_id, time_sentenced))
+        db.commit()
+        return redirect("/criminals")
+
 
 
 @app.route("/criminals/<int:cid>", methods=["GET", "POST"])
 def criminal_detail(cid):
-    ## to do: GET one Criminal + arrests + involvement; POST update
+    db = get_db()
     return render_template("criminal_detail.html")
 
 
