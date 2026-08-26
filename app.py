@@ -203,13 +203,30 @@ def proceeding_detail(irid):
 @app.route("/jails", methods=["GET", "POST"])
 def jails():
     ## to do: GET Jail + occupancy; POST insert Jail
-    return render_template("jails.html")
+    if request.method == "GET":
+        db = get_db()
+        jail = db.execute("SELECT * FROM Jail").fetchall()
+        return render_template("jails.html", jails=jail)
+        
+    if request.method == "POST":
+        db = get_db()
+        name = request.form.get("Name").strip()
+        location = request.form.get("Location").strip()
+        capacity = request.form.get("Capacity")
+        db.execute("INSERT INTO JAIL (Name, Location, Capacity) VALUES (?, ?, ?)", (name, location, capacity))
+        db.commit()
+        return redirect("/jails")
 
 
 @app.route("/jails/<int:jid>", methods=["GET", "POST"])
 def jail_detail(jid):
     ## to do: GET jail + inmates + jailors; POST update / assign jailor
-    return render_template("jail_detail.html")
+    if request.method == "GET":
+        db = get_db()
+        jail = db.execute("SELECT * FROM Jail").fetchall()
+        inmates = db.execute("SELECT * FROM Criminal WHERE JID = ?", (jid,)).fetchall()
+        jailers = db.execute("SELECT * FROM Police WHERE UID IN (SELECT UID FROM Jailor WHERE JID = ?)", (jid,)).fetchall()
+        return render_template("jail_detail.html", jail=jail, inmates=inmates, jailors=jailers)
 
 
 @app.route("/jail-info")
