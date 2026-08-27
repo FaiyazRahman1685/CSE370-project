@@ -247,14 +247,51 @@ def proceeding_detail(irid):
 @app.route("/jails", methods=["GET", "POST"])
 def jails():
     ## to do: GET Jail + occupancy; POST insert Jail
-    return render_template("jails.html")
+    if request.method == "GET":
+        db = get_db()
+        jail = db.execute("SELECT * FROM Jail").fetchall()
+        return render_template("jails.html", jails=jail)
+        
+    if request.method == "POST":
+        db = get_db()
+        name = request.form.get("Name").strip()
+        location = request.form.get("Location").strip()
+        capacity = request.form.get("Capacity")
+        db.execute("INSERT INTO JAIL (Name, Location, Capacity) VALUES (?, ?, ?)", (name, location, capacity))
+        db.commit()
+        return redirect("/jails")
 
 
 @app.route("/jails/<int:jid>", methods=["GET", "POST"])
 def jail_detail(jid):
     ## to do: GET jail + inmates + jailors; POST update / assign jailor
-    return render_template("jail_detail.html")
-
+    if request.method == "GET":
+        db = get_db()
+        jail = db.execute("SELECT j.*, Count(c.CID) as Occupancy FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID WHERE j.JID = ?", (jid,)).fetchone()
+        inmates = db.execute("SELECT * FROM Criminal WHERE JID = ?", (jid,)).fetchall()
+        jailers = db.execute("SELECT j.UID, u.Name, p.badge_no, p.rank FROM Jailor j JOIN User u ON j.UID = u.UID JOIN Police p ON j.UID = p.UID WHERE j.JID = ?", (jid,)).fetchall()
+        officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID").fetchall()
+        return render_template("jail_detail.html", jail=jail, inmates=inmates, jailors=jailers, officers=officers)
+    
+    if request.method == "POST":
+        db = get_db()
+        jailor_id = request.form.get("UID")
+        db.execute("INSERT INTO Jailor (UID, JID) VALUES (?, ?)", (jailor_id, jid))
+        db.commit()
+        return redirect(f"/jails/{jid}")
+        
+@app.route("/updatejail", methods=["POST"])
+def update_jail():
+    if request.method == "POST":
+        db = get_db()
+        jid = request.form.get("JID")
+        name = request.form.get("Name").strip()
+        location = request.form.get("Location").strip()
+        capacity = request.form.get("Capacity")
+        db.execute("UPDATE JAIL SET Name = ?, Location = ?, Capacity = ? WHERE JID = ?", (name, location, capacity, jid))
+        db.commit()
+        return redirect(f"/jails/{jid}")    
+    
 
 @app.route("/jail-info")
 def jail_info():
