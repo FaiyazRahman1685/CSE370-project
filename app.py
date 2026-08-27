@@ -46,12 +46,14 @@ def close_db(exception):
 
 @app.route("/")
 def index():
+    ## done
     if session.get("loggedin_UID"):
         return redirect("/dashboard")
     return redirect("/login")
 
 
 @app.route("/signup", methods=["GET","POST"])
+## done
 def signup():
     if request.method == "GET":
         return render_template("signup.html")
@@ -84,7 +86,7 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        ## to do: look up USER / POLICE and check password
+        ## done
         db = get_db()
         user = db.execute("SELECT * FROM USER WHERE name = ?", (username,)).fetchone()
         if user:
@@ -102,6 +104,7 @@ def login():
 
 @app.route("/logout")
 def logout():
+    ##done
     session.clear()
     return redirect(url_for("index"))
 
@@ -151,12 +154,14 @@ def analytics():
 
 @app.route("/criminals", methods=["GET", "POST"])
 def criminals():
-    ## to do: GET list Criminal; POST insert Criminal
+    ## done
+    if not check_login():
+            return redirect("/login")
     if request.method == "GET":
         db = get_db()
         criminal = db.execute("SELECT * FROM CRIMINAL").fetchall()
         jail = db.execute("SELECT * FROM JAIL").fetchall()
-        return render_template("criminals.html", criminals=criminal)
+        return render_template("criminals.html", criminals=criminal, jails=jail)
 
     if request.method == "POST":
         db = get_db()
@@ -175,6 +180,8 @@ def criminals():
 
 @app.route("/criminals/<int:cid>", methods=["GET", "POST"])
 def criminal_detail(cid):
+    if not check_login():
+            return redirect("/login")
     db = get_db()
     if request.method == "GET":
         criminal = db.execute("SELECT * FROM CRIMINAL WHERE CID = ?", (cid,)).fetchone()
@@ -196,38 +203,20 @@ def criminal_detail(cid):
         return redirect("/criminals/{cid}".format(cid=cid))
 
 
-@app.route("/search")
+@app.route("/search" , methods=["GET", "POST"])
 def search_criminals():
     ## to do: filter Criminal by crime / gender / nationality / jail
-    db = get_db()
-    crime = request.args.get("crime") or ""
-    gender = request.args.get("gender") or ""
-    nationality = request.args.get("nationality") or ""
-    jail_id = request.args.get("jail_id") or ""
-
-    #query = "SELECT * FROM CRIMINAL WHERE 1=1"
-    query = """
-    SELECT CRIMINAL.*, Jail.Name AS jail_name
-    FROM CRIMINAL
-    LEFT JOIN Jail ON CRIMINAL.JID = Jail.JID
-    WHERE 1=1"""
-    params = []
-    if crime:
-        query += " AND Crime LIKE ?"
-        params.append(f"%{crime}%")
-    if gender:
-        query += " AND Gender = ?"
-        params.append(gender)
-    if nationality:
-        query += " AND Nationality = ?"
-        params.append(nationality)
-    if jail_id:
-        query += " AND JID = ?"
-        params.append(jail_id)
-
-    criminals = db.execute(query, params).fetchall()
-    return render_template("search.html", criminals=criminals, crime=crime, gender=gender, nationality=nationality, jail_id=jail_id)
-
+    if not check_login():
+                return redirect("/login")
+    if request.method == "GET":
+        db = get_db()
+        crime = db.execute("SELECT DISTINCT Crime FROM CRIMINAL").fetchall()
+        gender = db.execute("SELECT DISTINCT Gender FROM CRIMINAL").fetchall()
+        nationality = db.execute("SELECT DISTINCT Nationality FROM CRIMINAL").fetchall()
+        jail = db.execute("SELECT * FROM JAIL").fetchall()
+        return render_template("search.html", jails=jail, crimes=crime, genders=gender, nationalities=nationality)
+    
+    
 
 @app.route("/proceedings")
 def proceedings():
@@ -246,7 +235,9 @@ def proceeding_detail(irid):
 
 @app.route("/jails", methods=["GET", "POST"])
 def jails():
-    ## to do: GET Jail + occupancy; POST insert Jail
+    ## done
+    if not check_login():
+            return redirect("/login")
     if request.method == "GET":
         db = get_db()
         jail = db.execute("SELECT * FROM Jail").fetchall()
@@ -264,7 +255,9 @@ def jails():
 
 @app.route("/jails/<int:jid>", methods=["GET", "POST"])
 def jail_detail(jid):
-    ## to do: GET jail + inmates + jailors; POST update / assign jailor
+    ## done
+    if not check_login():
+            return redirect("/login")
     if request.method == "GET":
         db = get_db()
         jail = db.execute("SELECT j.*, Count(c.CID) as Occupancy FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID WHERE j.JID = ?", (jid,)).fetchone()
@@ -282,6 +275,8 @@ def jail_detail(jid):
         
 @app.route("/updatejail", methods=["POST"])
 def update_jail():
+    if not check_login():
+            return redirect("/login")
     if request.method == "POST":
         db = get_db()
         jid = request.form.get("JID")

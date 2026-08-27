@@ -29,7 +29,7 @@
             <select name="crime" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                 <option value="">Any</option>
                 {% for crime in crimes %}
-                <option value="{{ crime }}" {% if filters.crime == crime %}selected{% endif %}>{{ crime }}</option>
+                <option value="{{ crime.Crime }}" {% if filters.crime == crime.Crime %}selected{% endif %}>{{ crime.Crime }}</option>
                 {% endfor %}
             </select>
         </label>
@@ -46,7 +46,7 @@
             <select name="nationality" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                 <option value="">Any</option>
                 {% for nationality in nationalities %}
-                <option value="{{ nationality }}" {% if filters.nationality == nationality %}selected{% endif %}>{{ nationality }}</option>
+                <option value="{{ nationality.Nationality }}" {% if filters.nationality == nationality.Nationality %}selected{% endif %}>{{ nationality.Nationality }}</option>
                 {% endfor %}
             </select>
         </label>
