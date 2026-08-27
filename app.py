@@ -176,13 +176,57 @@ def criminals():
 @app.route("/criminals/<int:cid>", methods=["GET", "POST"])
 def criminal_detail(cid):
     db = get_db()
-    return render_template("criminal_detail.html")
+    if request.method == "GET":
+        criminal = db.execute("SELECT * FROM CRIMINAL WHERE CID = ?", (cid,)).fetchone()
+        jail = db.execute("SELECT * FROM JAIL WHERE JID = ?", (criminal["JID"],)).fetchone()
+        arrest = db.execute("SELECT * FROM 'Arrested By' WHERE CID = ?", (cid,)).fetchall()
+        case = db.execute("SELECT * FROM 'Criminal Involvement' WHERE CID = ?", (cid,)).fetchall()
+        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, case=case)
+
+    if request.method == "POST":
+        name = request.form.get("Name").strip()
+        age = request.form.get("Age")
+        gender = request.form.get("Gender")
+        nationality = request.form.get("Nationality")
+        crime = request.form.get("Crime")
+        jail_id = request.form.get("JID")
+        time_sentenced = request.form.get("time_sentenced")
+        db.execute("UPDATE CRIMINAL SET Name = ?, Age = ?, Gender = ?, Nationality = ?, Crime = ?, JID = ?, time_sentenced = ? WHERE CID = ?", (name, age, gender, nationality, crime, jail_id, time_sentenced, cid))
+        db.commit()
+        return redirect("/criminals/{cid}".format(cid=cid))
 
 
 @app.route("/search")
 def search_criminals():
     ## to do: filter Criminal by crime / gender / nationality / jail
-    return render_template("search.html")
+    db = get_db()
+    crime = request.args.get("crime") or ""
+    gender = request.args.get("gender") or ""
+    nationality = request.args.get("nationality") or ""
+    jail_id = request.args.get("jail_id") or ""
+
+    #query = "SELECT * FROM CRIMINAL WHERE 1=1"
+    query = """
+    SELECT CRIMINAL.*, Jail.Name AS jail_name
+    FROM CRIMINAL
+    LEFT JOIN Jail ON CRIMINAL.JID = Jail.JID
+    WHERE 1=1"""
+    params = []
+    if crime:
+        query += " AND Crime LIKE ?"
+        params.append(f"%{crime}%")
+    if gender:
+        query += " AND Gender = ?"
+        params.append(gender)
+    if nationality:
+        query += " AND Nationality = ?"
+        params.append(nationality)
+    if jail_id:
+        query += " AND JID = ?"
+        params.append(jail_id)
+
+    criminals = db.execute(query, params).fetchall()
+    return render_template("search.html", criminals=criminals, crime=crime, gender=gender, nationality=nationality, jail_id=jail_id)
 
 
 @app.route("/proceedings")
