@@ -10,7 +10,7 @@
 <div class="mb-8">
     <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Civilian</p>
     <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Your incident reports</h1>
-    <p class="mt-2 text-sm text-slate-500">The public can file incident reports only. Police promote a report to a criminal case.</p>
+    <p class="mt-2 text-sm text-slate-500">Open a report to see whether police upgraded it, plus evidence, judge, and assigned officers.</p>
 </div>
 
 <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
@@ -27,7 +27,8 @@
                     <th class="px-5 py-3 font-medium">Date</th>
                     <th class="px-5 py-3 font-medium">Location</th>
                     <th class="px-5 py-3 font-medium">Accused</th>
-                    <th class="px-5 py-3 font-medium">Case status</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -37,7 +38,16 @@
                     <td class="px-5 py-3">{{ case.Date or "—" }}</td>
                     <td class="px-5 py-3">{{ case.location or "—" }}</td>
                     <td class="px-5 py-3">{{ case.AccusedName or "—" }}</td>
-                    <td class="px-5 py-3">{{ case.Judge or "Incident only" }}</td>
+                    <td class="px-5 py-3">
+                        {% if case.Judge or case.Evidence %}
+                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Criminal case</span>
+                        {% else %}
+                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Incident</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                        <a href="{{ url_for('incident_detail', irid=case.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

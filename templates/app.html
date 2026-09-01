@@ -46,6 +46,7 @@
                     {{ nav_link(url_for("dashboard"), "Home", path == "/dashboard") }}
                     {{ nav_link(url_for("search_criminals"), "Search", path.startswith("/search")) }}
                     {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
+                    {{ nav_link(url_for("victim_cases"), "My reports", path.startswith("/my-cases")) }}
                     {{ nav_link(url_for("report_incident"), "Report", path.startswith("/report")) }}
                 {% endif %}
             </nav>

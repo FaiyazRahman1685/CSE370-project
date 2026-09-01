@@ -155,11 +155,11 @@ def incidents():
 
 @app.route("/incidents/<int:irid>", methods=["GET", "POST"])
 def incident_detail(irid):
-    ## to do: GET report + victims + officers; POST assign Works_on
+    ## to do: GET report + victims + officers + Judge/Evidence; POST assign Works_on (police only)
     if not check_login():
         return redirect("/login")
-    if session.get("role") != "police":
-        return redirect("/dashboard")
+    if request.method == "POST" and session.get("role") != "police":
+        return redirect(f"/incidents/{irid}")
     return render_template("incident_detail.html")
 
 
@@ -224,8 +224,6 @@ def criminals():
 def criminal_detail(cid):
     if not check_login():
             return redirect("/login")
-    if session.get("role") != "police":
-        return redirect("/search")
     db = get_db()
     if request.method == "GET":
         criminal = db.execute("SELECT * FROM CRIMINAL WHERE CID = ?", (cid,)).fetchone()
@@ -235,6 +233,8 @@ def criminal_detail(cid):
         return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, case=case)
 
     if request.method == "POST":
+        if session.get("role") != "police":
+            return redirect("/criminals/{cid}".format(cid=cid))
         name = request.form.get("Name").strip()
         age = request.form.get("Age")
         gender = request.form.get("Gender")

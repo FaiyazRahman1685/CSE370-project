@@ -2,7 +2,7 @@
 
 {% block title %}Home · Sentinel{% endblock %}
 
-{# reports: IRID, Date, location, AccusedName #}
+{# reports: IRID, Date, location, AccusedName, Judge, Evidence #}
 
 {% set reports = reports if reports is defined else [
     {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin"},
@@ -44,6 +44,8 @@
                     <th class="px-5 py-3 font-medium">Date</th>
                     <th class="px-5 py-3 font-medium">Location</th>
                     <th class="px-5 py-3 font-medium">Accused</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -53,6 +55,16 @@
                     <td class="px-5 py-3">{{ report.Date or "—" }}</td>
                     <td class="px-5 py-3">{{ report.location or "—" }}</td>
                     <td class="px-5 py-3">{{ report.AccusedName or "—" }}</td>
+                    <td class="px-5 py-3">
+                        {% if report.Judge or report.Evidence %}
+                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Criminal case</span>
+                        {% else %}
+                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Incident</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                        <a href="{{ url_for('incident_detail', irid=report.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

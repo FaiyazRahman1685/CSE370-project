@@ -2,52 +2,85 @@
 
 {% block title %}Incident {{ incident.IRID if incident is defined else "" }} · Sentinel{% endblock %}
 
-{# incident: IRID, Date, Description, location, AccusedName, reporter_name
+{# incident: IRID, Date, Description, location, AccusedName, reporter_name, Judge, Evidence
    victims: UID, name
    officers: UID, name, badge_no
-   all_officers: UID, name #}
+   all_officers: UID, name  (police assign dropdown) #}
 
+{% set is_police = session.get("role") == "police" %}
 {% set incident = incident if incident is defined else {
     "IRID": 12, "Date": "2026-08-14", "Description": "Phone snatched near the south gate of the market.",
-    "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima"
+    "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima",
+    "Judge": none, "Evidence": none
 } %}
 {% set victims = victims if victims is defined else [{"UID": 2, "name": "fatima"}] %}
 {% set officers = officers if officers is defined else [{"UID": 1, "name": "rahman", "badge_no": "BD-1042"}] %}
 {% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
+{% set upgraded = incident.Judge or incident.Evidence %}
 
 {% block page %}
 <div class="mb-8">
+    {% if is_police %}
     <a href="{{ url_for('incidents') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← All incidents</a>
+    {% else %}
+    <a href="{{ url_for('dashboard') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← Your reports</a>
+    {% endif %}
     <p class="mt-4 text-xs font-medium uppercase tracking-wide text-blue-600">Report {{ incident.IRID }}</p>
     <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">{{ incident.location or "Incident" }}</h1>
     <p class="mt-2 text-sm text-slate-500">Filed {{ incident.Date or "—" }} by {{ incident.reporter_name or "unknown" }}</p>
 </div>
 
 <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-        <h2 class="font-semibold text-slate-800">Report details</h2>
-        <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-            <div class="rounded-xl bg-slate-50 px-4 py-3">
-                <dt class="text-xs text-slate-500">Date</dt>
-                <dd class="mt-1 font-medium text-slate-800">{{ incident.Date or "—" }}</dd>
+    <div class="flex flex-col gap-6">
+        <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+            <h2 class="font-semibold text-slate-800">Report details</h2>
+            <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <dt class="text-xs text-slate-500">Date</dt>
+                    <dd class="mt-1 font-medium text-slate-800">{{ incident.Date or "—" }}</dd>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <dt class="text-xs text-slate-500">Accused</dt>
+                    <dd class="mt-1 font-medium text-slate-800">{{ incident.AccusedName or "—" }}</dd>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt class="text-xs text-slate-500">Location</dt>
+                    <dd class="mt-1 font-medium text-slate-800">{{ incident.location or "—" }}</dd>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2">
+                    <dt class="text-xs text-slate-500">Description</dt>
+                    <dd class="mt-1 leading-relaxed text-slate-700">{{ incident.Description or "—" }}</dd>
+                </div>
+            </dl>
+            {% if is_police %}
+            <a href="{{ url_for('proceeding_detail', irid=incident.IRID) }}" class="mt-6 inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">
+                Promote to criminal case
+            </a>
+            {% endif %}
+        </article>
+
+        <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="font-semibold text-slate-800">Case progress</h2>
+                {% if upgraded %}
+                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Upgraded to criminal case</span>
+                {% else %}
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Incident report</span>
+                {% endif %}
             </div>
-            <div class="rounded-xl bg-slate-50 px-4 py-3">
-                <dt class="text-xs text-slate-500">Accused</dt>
-                <dd class="mt-1 font-medium text-slate-800">{{ incident.AccusedName or "—" }}</dd>
-            </div>
-            <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2">
-                <dt class="text-xs text-slate-500">Location</dt>
-                <dd class="mt-1 font-medium text-slate-800">{{ incident.location or "—" }}</dd>
-            </div>
-            <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2">
-                <dt class="text-xs text-slate-500">Description</dt>
-                <dd class="mt-1 leading-relaxed text-slate-700">{{ incident.Description or "—" }}</dd>
-            </div>
-        </dl>
-        <a href="{{ url_for('proceeding_detail', irid=incident.IRID) }}" class="mt-6 inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">
-            Promote to criminal case
-        </a>
-    </article>
+            <p class="mt-1 text-xs text-slate-500">Judge and evidence from Criminal cases, keyed by this IRID.</p>
+            <dl class="mt-5 grid gap-3 text-sm">
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <dt class="text-xs text-slate-500">Judge</dt>
+                    <dd class="mt-1 font-medium text-slate-800">{{ incident.Judge or "Not assigned yet" }}</dd>
+                </div>
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <dt class="text-xs text-slate-500">Evidence gathered</dt>
+                    <dd class="mt-1 leading-relaxed text-slate-700">{{ incident.Evidence or "No evidence filed yet." }}</dd>
+                </div>
+            </dl>
+        </article>
+    </div>
 
     <div class="flex flex-col gap-6">
         <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
@@ -68,7 +101,7 @@
 
         <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
             <div class="border-b border-slate-100 px-5 py-4">
-                <h2 class="font-semibold text-slate-800">Officers on this report</h2>
+                <h2 class="font-semibold text-slate-800">Officers assigned</h2>
                 <p class="text-xs text-slate-500">Works_on</p>
             </div>
             {% if officers %}
@@ -81,8 +114,9 @@
                 {% endfor %}
             </ul>
             {% else %}
-            <p class="px-5 py-8 text-center text-sm text-slate-500">Unassigned.</p>
+            <p class="px-5 py-8 text-center text-sm text-slate-500">No officers assigned yet.</p>
             {% endif %}
+            {% if is_police %}
             <form action="{{ url_for('incident_detail', irid=incident.IRID) }}" method="post" class="flex gap-2 border-t border-slate-100 p-4">
                 <select name="UID" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                     <option value="">Assign an officer</option>
@@ -92,6 +126,7 @@
                 </select>
                 <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>
             </form>
+            {% endif %}
         </article>
     </div>
 </div>
