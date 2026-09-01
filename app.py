@@ -247,20 +247,55 @@ def criminal_detail(cid):
         return redirect("/criminals/{cid}".format(cid=cid))
 
 
-@app.route("/search" , methods=["GET", "POST"])
+@app.route("/search" , methods=["GET"])
 def search_criminals():
-    ## to do: filter Criminal by crime / gender / nationality / jail
+    ## done kindof
     if not check_login():
                 return redirect("/login")
-    if request.method == "GET":
-        db = get_db()
-        crime = db.execute("SELECT DISTINCT Crime FROM CRIMINAL").fetchall()
-        gender = db.execute("SELECT DISTINCT Gender FROM CRIMINAL").fetchall()
-        nationality = db.execute("SELECT DISTINCT Nationality FROM CRIMINAL").fetchall()
-        jail = db.execute("SELECT * FROM JAIL").fetchall()
-        return render_template("search.html", jails=jail, crimes=crime, genders=gender, nationalities=nationality)
+
+    db = get_db()
+    #drop down filters
+    crimes = db.execute("SELECT DISTINCT Crime FROM CRIMINAL").fetchall()
+    genders = db.execute("SELECT DISTINCT Gender FROM CRIMINAL").fetchall()
+    nationalities = db.execute("SELECT DISTINCT Nationality FROM CRIMINAL").fetchall()
+    jail = db.execute("SELECT * FROM JAIL").fetchall()
     
+    #Filtered values
+    crime = request.args.get("crime") or ""
+    gender = request.args.get("gender") or ""
+    nationality = request.args.get("nationality") or ""
+    jail_id = request.args.get("jail_id") or ""
+
+    query = "SELECT c.*, j.Name as jail_name FROM CRIMINAL c LEFT JOIN JAIL j ON c.JID = j.JID where 1=1"
+
+    params = []
+    if crime:   
+        query += " AND c.Crime = ?"
+        params.append(crime)
+
+    if gender:
+        query += " AND c.Gender = ?"
+        params.append(gender)
+
+    if nationality:
+        query += " AND c.Nationality = ?"
+        params.append(nationality)
+
+    if jail_id:
+        query += " AND c.JID = ?"
+        params.append(jail_id)
+
+    criminals = db.execute(query, params).fetchall()
+    filters = {
+            "crime": crimes,
+            "gender": genders,
+            "nationality": nationalities,
+            "jail_id": jail_id
+        }
     
+    return render_template("search.html", results=criminals, jails=jail, crimes=crimes, genders=genders, nationalities=nationalities, filters=filters)
+        
+
 
 @app.route("/proceedings")
 def proceedings():
