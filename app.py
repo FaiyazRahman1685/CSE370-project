@@ -40,6 +40,35 @@ def close_db(exception):
         db.close()
 
 
+@app.context_processor
+def inject_current_user():
+    uid = session.get("loggedin_UID")
+    if not uid:
+        return {"user_name": "Guest"}
+    name = session.get("name")
+    if not name:
+        db = get_db()
+        row = db.execute("SELECT name FROM USER WHERE UID = ?", (uid,)).fetchone()
+        name = row["name"] if row else "Guest"
+        session["name"] = name
+    return {"user_name": name}
+
+
+@app.after_request
+def disable_cache(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+@app.route("/session-check")
+def session_check():
+    if not check_login():
+        return ("", 401)
+    return ("", 204)
+
+
 
 
 # --- Person 1: login, dashboards, incidents, analytics ---
@@ -95,6 +124,7 @@ def login():
             if password == real_password:
                 session["loggedin_UID"] = user["UID"]
                 session["role"] = user["role"]
+                session["name"] = user["name"]
                 return redirect("/dashboard")
             else:
                 return render_template("login.html", error="Invalid password")

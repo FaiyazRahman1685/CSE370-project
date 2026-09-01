@@ -8,5 +8,31 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
     {% block content %}{% endblock %}
+    {% if session.get("loggedin_UID") %}
+    <script>
+        function leaveIfLoggedOut() {
+            fetch("{{ url_for('session_check') }}", { cache: "no-store", credentials: "same-origin" })
+                .then(function (res) {
+                    if (res.status === 401) {
+                        window.location.replace("{{ url_for('login') }}");
+                    }
+                })
+                .catch(function () {});
+        }
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            } else {
+                leaveIfLoggedOut();
+            }
+        });
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible") {
+                leaveIfLoggedOut();
+            }
+        });
+        setInterval(leaveIfLoggedOut, 15000);
+    </script>
+    {% endif %}
 </body>
 </html>
