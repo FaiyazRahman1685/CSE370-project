@@ -1,11 +1,14 @@
 {% extends "app.html" %}
 
-{% block title %}Incident {{ incident.IRID if incident is defined else "" }} · Sentinel{% endblock %}
+{% block title %}{% if session.get("role") == "police" %}Case{% else %}Incident{% endif %} {{ incident.IRID if incident is defined else "" }} · Sentinel{% endblock %}
 
 {# incident: IRID, Date, Description, location, AccusedName, reporter_name, Judge, Evidence
+   case / cases: Judge, Evidence
    victims: UID, name
    officers: UID, name, badge_no
-   all_officers: UID, name  (police assign dropdown) #}
+   all_officers: UID, name
+   involved_criminals: CID, Name
+   all_criminal: CID, Name #}
 
 {% set is_police = session.get("role") == "police" %}
 {% set incident = incident if incident is defined else {
@@ -13,19 +16,24 @@
     "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima",
     "Judge": none, "Evidence": none
 } %}
+{% set case = case if case is defined else (cases if cases is defined else incident) %}
 {% set victims = victims if victims is defined else [{"UID": 2, "name": "fatima"}] %}
 {% set officers = officers if officers is defined else [{"UID": 1, "name": "rahman", "badge_no": "BD-1042"}] %}
 {% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
-{% set upgraded = incident.Judge or incident.Evidence %}
+{% set involved_criminals = involved_criminals if involved_criminals is defined else [] %}
+{% set all_criminal = all_criminal if all_criminal is defined else [] %}
+{% set judge = case.Judge if case is defined and case else incident.Judge %}
+{% set evidence = case.Evidence if case is defined and case else incident.Evidence %}
+{% set upgraded = judge or evidence %}
 
 {% block page %}
 <div class="mb-8">
     {% if is_police %}
-    <a href="{{ url_for('incidents') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← All incidents</a>
+    <a href="{{ url_for('incidents') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← All cases</a>
     {% else %}
     <a href="{{ url_for('dashboard') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← Your reports</a>
     {% endif %}
-    <p class="mt-4 text-xs font-medium uppercase tracking-wide text-blue-600">Report {{ incident.IRID }}</p>
+    <p class="mt-4 text-xs font-medium uppercase tracking-wide text-blue-600">{% if is_police %}Case{% else %}Report{% endif %} {{ incident.IRID }}</p>
     <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">{{ incident.location or "Incident" }}</h1>
     <p class="mt-2 text-sm text-slate-500">Filed {{ incident.Date or "—" }} by {{ incident.reporter_name or "unknown" }}</p>
 </div>
@@ -52,13 +60,33 @@
                     <dd class="mt-1 leading-relaxed text-slate-700">{{ incident.Description or "—" }}</dd>
                 </div>
             </dl>
-            {% if is_police %}
-            <a href="{{ url_for('proceeding_detail', irid=incident.IRID) }}" class="mt-6 inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">
-                Promote to criminal case
-            </a>
-            {% endif %}
         </article>
 
+        {% if is_police %}
+        <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="font-semibold text-slate-800">Criminal case</h2>
+                {% if upgraded %}
+                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Upgraded</span>
+                {% else %}
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Report only</span>
+                {% endif %}
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Assign a judge and evidence to promote this incident. Writes Criminal cases keyed by this IRID.</p>
+            <form action="{{ url_for('incident_detail', irid=incident.IRID) }}" method="post" class="mt-5 flex flex-col gap-4">
+                <input type="hidden" name="action" value="{{ 'update_judge' if upgraded else 'promote_case' }}">
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Judge
+                    <input type="text" name="judge" value="{{ judge or '' }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                </label>
+                <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                    Evidence
+                    <textarea name="evidence" rows="5" class="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">{{ evidence or "" }}</textarea>
+                </label>
+                <button type="submit" class="h-11 rounded-xl bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">{{ "Update case" if upgraded else "Promote to criminal case" }}</button>
+            </form>
+        </article>
+        {% else %}
         <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
             <div class="flex items-center justify-between gap-3">
                 <h2 class="font-semibold text-slate-800">Case progress</h2>
@@ -68,18 +96,18 @@
                 <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Incident report</span>
                 {% endif %}
             </div>
-            <p class="mt-1 text-xs text-slate-500">Judge and evidence from Criminal cases, keyed by this IRID.</p>
             <dl class="mt-5 grid gap-3 text-sm">
                 <div class="rounded-xl bg-slate-50 px-4 py-3">
                     <dt class="text-xs text-slate-500">Judge</dt>
-                    <dd class="mt-1 font-medium text-slate-800">{{ incident.Judge or "Not assigned yet" }}</dd>
+                    <dd class="mt-1 font-medium text-slate-800">{{ judge or "Not assigned yet" }}</dd>
                 </div>
                 <div class="rounded-xl bg-slate-50 px-4 py-3">
                     <dt class="text-xs text-slate-500">Evidence gathered</dt>
-                    <dd class="mt-1 leading-relaxed text-slate-700">{{ incident.Evidence or "No evidence filed yet." }}</dd>
+                    <dd class="mt-1 leading-relaxed text-slate-700">{{ evidence or "No evidence filed yet." }}</dd>
                 </div>
             </dl>
         </article>
+        {% endif %}
     </div>
 
     <div class="flex flex-col gap-6">
@@ -91,11 +119,41 @@
             {% if victims %}
             <ul class="divide-y divide-slate-100 text-sm">
                 {% for victim in victims %}
-                <li class="px-5 py-3 font-medium text-slate-800">{{ victim.name }}</li>
+                <li class="px-5 py-3 font-medium text-slate-800">{{ victim.name or victim.Name }}</li>
                 {% endfor %}
             </ul>
             {% else %}
             <p class="px-5 py-8 text-center text-sm text-slate-500">No victims linked.</p>
+            {% endif %}
+        </article>
+
+        <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
+            <div class="border-b border-slate-100 px-5 py-4">
+                <h2 class="font-semibold text-slate-800">Involved criminals</h2>
+                <p class="text-xs text-slate-500">Criminals linked to this IRID</p>
+            </div>
+            {% if involved_criminals %}
+            <ul class="divide-y divide-slate-100 text-sm">
+                {% for person in involved_criminals %}
+                <li class="flex items-center justify-between px-5 py-3">
+                    <a href="{{ url_for('criminal_detail', cid=person.CID) }}" class="font-medium text-blue-600 hover:text-blue-700">{{ person.Name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="px-5 py-8 text-center text-sm text-slate-500">No criminals linked.</p>
+            {% endif %}
+            {% if is_police %}
+            <form action="{{ url_for('incident_detail', irid=incident.IRID) }}" method="post" class="flex gap-2 border-t border-slate-100 p-4">
+                <input type="hidden" name="action" value="update_criminal">
+                <select name="criminal" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                    <option value="">Link a criminal</option>
+                    {% for person in all_criminal %}
+                    <option value="{{ person.CID }}">{{ person.Name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>
+            </form>
             {% endif %}
         </article>
 
@@ -108,7 +166,7 @@
             <ul class="divide-y divide-slate-100 text-sm">
                 {% for officer in officers %}
                 <li class="flex items-center justify-between px-5 py-3">
-                    <span class="font-medium text-slate-800">{{ officer.name }}</span>
+                    <span class="font-medium text-slate-800">{{ officer.name or officer.Name }}</span>
                     <span class="text-slate-500">{{ officer.badge_no or "—" }}</span>
                 </li>
                 {% endfor %}
@@ -118,10 +176,11 @@
             {% endif %}
             {% if is_police %}
             <form action="{{ url_for('incident_detail', irid=incident.IRID) }}" method="post" class="flex gap-2 border-t border-slate-100 p-4">
-                <select name="UID" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <input type="hidden" name="action" value="assign_officer">
+                <select name="officer" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                     <option value="">Assign an officer</option>
                     {% for officer in all_officers %}
-                    <option value="{{ officer.UID }}">{{ officer.name }}</option>
+                    <option value="{{ officer.UID }}">{{ officer.name or officer.Name }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>

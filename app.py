@@ -158,9 +158,45 @@ def incident_detail(irid):
     ## to do: GET report + victims + officers + Judge/Evidence; POST assign Works_on (police only)
     if not check_login():
         return redirect("/login")
-    if request.method == "POST" and session.get("role") != "police":
-        return redirect(f"/incidents/{irid}")
-    return render_template("incident_detail.html")
+    db = get_db()
+    if request.method == "GET":
+        incident = db.execute("select i.IRID, i.Description, i.Date, i.incident_location as location, i.AccusedName, u.Name as reporter_name, c.Judge, c.Evidence from 'Incident Reports' i join User u on i.ReportedUID = u.UID left join 'Criminal cases' c on i.IRID = c.IRID where i.IRID = ?", (irid,)).fetchone()
+        victims = db.execute("select u.Name from Targeted t join User u on t.UID = u.UID where t.IRID = ?", (irid,)).fetchall()
+        officers = db.execute("select u.Name from Works_on w join User u on w.UID = u.UID where w.IRID = ?", (irid,)).fetchall()
+        cases = db.execute("select c.Judge, c.Evidence from 'Criminal cases' c where c.IRID = ?", (irid,)).fetchone()
+        involved_criminals = db.execute("select c.CID, c.Name from 'Criminal Involvement' ci join Criminal c on ci.CID = c.CID where ci.IRID = ?", (irid,)).fetchall()
+        if session.get("role") == "police":
+            all_officers = db.execute("select p.UID, u.Name from Police p join User u on p.UID = u.UID where p.UID not in (select w.UID from Works_on w where w.IRID = ?)", (irid,)).fetchall()
+            all_criminal = db.execute("select * from Criminal").fetchall()
+            return render_template("incident_detail.html", incident=incident, victims=victims, officers=officers, all_officers=all_officers, cases=cases, involved_criminals=involved_criminals, all_criminal=all_criminal)
+        else:
+            return render_template("incident_detail.html", incident=incident, victims=victims, officers=officers, cases=cases, involved_criminals=involved_criminals)
+        
+    if request.method == "POST" and session.get("role") == "police":
+        db = get_db()
+        action = request.form.get("action")
+        if action == "assign_officer":
+            officer = request.form.get("officer")
+            db.execute("INSERT INTO Works_on (UID, IRID) VALUES (?, ?)", (officer, irid))
+            db.commit()
+            return redirect(f"/incidents/{irid}")
+        if action == "update_judge":
+            judge = request.form.get("judge")
+            evidence = request.form.get("evidence")
+            db.execute("UPDATE 'Criminal cases' SET Judge = ?, Evidence = ? WHERE IRID = ?", (judge, evidence, irid))
+            db.commit()
+            return redirect(f"/incidents/{irid}")
+        if action == "update_criminal":
+            criminal = request.form.get("criminal")
+            db.execute("INSERT INTO 'Criminal Involvement' (CID, IRID) VALUES (?, ?)", (criminal, irid))
+            db.commit()
+            return redirect(f"/incidents/{irid}")
+        if action == "promote_case":
+            judge = request.form.get("judge")
+            evidence = request.form.get("evidence")
+            db.execute("insert into 'Criminal cases' (IRID, Judge, Evidence) values (?, ?, ?)", (irid, judge, evidence))
+            db.commit()
+            return redirect(f"/incidents/{irid}")
 
 
 @app.route("/report", methods=["GET", "POST"])
@@ -176,9 +212,15 @@ def report_incident():
         incident_location = request.form.get("incident_location")
         accused_name = request.form.get("AccusedName")
         description = request.form.get("Description")
+        victims = request.form.getlist("victims")
         db.execute("INSERT INTO 'Incident Reports' (Date, incident_location, AccusedName, Description, ReportedUID) VALUES (?, ?, ?, ?, ?)", (incident_date, incident_location, accused_name, description, session.get("loggedin_UID")))
+        irid = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        for victim_uid in victims:
+            if not victim_uid:
+                continue
+            db.execute("INSERT INTO Targeted (UID, IRID) VALUES (?, ?)", (victim_uid, irid))
         db.commit()
-        return redirect("/dashboard")
+        return redirect("/incidents")
 
 
 @app.route("/analytics")
@@ -294,27 +336,6 @@ def search_criminals():
         }
     
     return render_template("search.html", results=criminals, jails=jail, crimes=crimes, genders=genders, nationalities=nationalities, filters=filters)
-        
-
-
-@app.route("/proceedings")
-def proceedings():
-    ## to do: list Incident Reports left join Criminal cases
-    if not check_login():
-        return redirect("/login")
-    if session.get("role") != "police":
-        return redirect("/dashboard")
-    return render_template("proceedings.html")
-
-
-@app.route("/proceedings/<int:irid>", methods=["GET", "POST"])
-def proceeding_detail(irid):
-    ## to do: GET case file; POST update Judge/Evidence, link criminals, assign officers
-    if not check_login():
-        return redirect("/login")
-    if session.get("role") != "police":
-        return redirect("/dashboard")
-    return render_template("proceeding_detail.html")
 
 
 # --- Person 3: jails, officers, victim cases ---

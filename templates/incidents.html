@@ -1,8 +1,8 @@
 {% extends "app.html" %}
 
-{% block title %}Incidents · Sentinel{% endblock %}
+{% block title %}Cases · Sentinel{% endblock %}
 
-{# incidents: IRID, Date, location, AccusedName, reporter_name, officer_count #}
+{# incidents: IRID, Date, location, AccusedName, reporter_name, officer_count, Judge #}
 
 {% set incidents = incidents if incidents is defined else [
     {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima", "officer_count": 1},
@@ -13,9 +13,9 @@
 {% block page %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-        <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Reports</p>
-        <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Incident reports</h1>
-        <p class="mt-2 text-sm text-slate-500">Public and police file these. Open one to assign officers or promote it to a criminal case.</p>
+        <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Cases</p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Reports and cases</h1>
+        <p class="mt-2 text-sm text-slate-500">Every incident report. Open one to assign officers, set a judge, and record evidence.</p>
     </div>
     <a href="{{ url_for('report_incident') }}" class="inline-flex h-11 items-center rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">File report</a>
 </div>
@@ -32,6 +32,7 @@
                     <th class="px-5 py-3 font-medium">Accused</th>
                     <th class="px-5 py-3 font-medium">Reported by</th>
                     <th class="px-5 py-3 font-medium">Officers</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
                     <th class="px-5 py-3 font-medium"></th>
                 </tr>
             </thead>
@@ -44,6 +45,13 @@
                     <td class="px-5 py-3">{{ incident.AccusedName or "—" }}</td>
                     <td class="px-5 py-3">{{ incident.reporter_name or "—" }}</td>
                     <td class="px-5 py-3">{{ incident.officer_count or 0 }}</td>
+                    <td class="px-5 py-3">
+                        {% if incident.Judge or incident.Evidence %}
+                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Criminal case</span>
+                        {% else %}
+                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Report</span>
+                        {% endif %}
+                    </td>
                     <td class="px-5 py-3 text-right">
                         <a href="{{ url_for('incident_detail', irid=incident.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
                     </td>

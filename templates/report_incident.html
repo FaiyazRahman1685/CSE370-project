@@ -27,7 +27,26 @@
             Description
             <textarea name="Description" rows="6" required placeholder="What happened" class="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"></textarea>
         </label>
+        <div class="flex flex-col gap-1.5">
+            <p class="text-sm font-medium text-slate-700">Victim UIDs</p>
+            <p class="text-xs text-slate-500">Add every victim’s user ID. Leave a row blank if you do not know one yet.</p>
+            <div id="victim-fields" class="mt-1 flex flex-col gap-2">
+                <input type="number" name="victims" min="1" placeholder="Victim UID" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            </div>
+            <button type="button" id="add-victim" class="mt-1 self-start text-sm font-medium text-blue-600 hover:text-blue-700">+ Add another victim</button>
+        </div>
         <button type="submit" class="h-11 rounded-xl bg-blue-600 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">File report</button>
     </form>
 </article>
+<script>
+    document.getElementById("add-victim").addEventListener("click", function () {
+        var input = document.createElement("input");
+        input.type = "number";
+        input.name = "victims";
+        input.min = "1";
+        input.placeholder = "Victim UID";
+        input.className = "h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
+        document.getElementById("victim-fields").appendChild(input);
+    });
+</script>
 {% endblock %}

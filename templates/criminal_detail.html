@@ -140,7 +140,7 @@
                 {% for case_row in cases %}
                 <li class="flex items-center justify-between px-5 py-3">
                     {% if is_police %}
-                    <a href="{{ url_for('proceeding_detail', irid=case_row.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">IRID {{ case_row.IRID }}</a>
+                    <a href="{{ url_for('incident_detail', irid=case_row.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">IRID {{ case_row.IRID }}</a>
                     {% else %}
                     <span class="font-medium text-slate-800">IRID {{ case_row.IRID }}</span>
                     {% endif %}
