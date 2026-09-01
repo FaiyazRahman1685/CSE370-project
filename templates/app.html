@@ -41,11 +41,11 @@
                     {{ nav_link(url_for("proceedings"), "Cases", path.startswith("/proceedings")) }}
                     {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
                     {{ nav_link(url_for("incidents"), "Incidents", path.startswith("/incidents")) }}
+                    {{ nav_link(url_for("report_incident"), "Report", path.startswith("/report")) }}
                 {% else %}
                     {{ nav_link(url_for("dashboard"), "Home", path == "/dashboard") }}
                     {{ nav_link(url_for("search_criminals"), "Search", path.startswith("/search")) }}
-                    {{ nav_link(url_for("jail_info"), "Jail info", path.startswith("/jail-info")) }}
-                    {{ nav_link(url_for("victim_cases"), "My cases", path.startswith("/my-cases")) }}
+                    {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
                     {{ nav_link(url_for("report_incident"), "Report", path.startswith("/report")) }}
                 {% endif %}
             </nav>

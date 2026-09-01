@@ -12,21 +12,17 @@
 <div class="mb-8">
     <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Civilian</p>
     <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Welcome, {{ user.name }}</h1>
-    <p class="mt-2 text-sm text-slate-500">Search public records, check jail capacity, or file a report.</p>
+    <p class="mt-2 text-sm text-slate-500">Search public records, view crime analytics, or file an incident report.</p>
 </div>
 
-<section class="grid gap-4 sm:grid-cols-2">
+<section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <a href="{{ url_for('search_criminals') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
         <p class="text-sm font-semibold text-slate-800">Criminal search</p>
         <p class="mt-1 text-sm text-slate-500">Filter public profiles by crime, gender, nationality, or jail.</p>
     </a>
-    <a href="{{ url_for('jail_info') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
-        <p class="text-sm font-semibold text-slate-800">Jail info</p>
-        <p class="mt-1 text-sm text-slate-500">Capacity, current population, and facility locations.</p>
-    </a>
-    <a href="{{ url_for('victim_cases') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
-        <p class="text-sm font-semibold text-slate-800">Provide a criminal case</p>
-        <p class="mt-1 text-sm text-slate-500">Submit case details as a victim for police follow-up.</p>
+    <a href="{{ url_for('analytics') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Crime analytics</p>
+        <p class="mt-1 text-sm text-slate-500">Hot zones and busy hours from filed incident reports.</p>
     </a>
     <a href="{{ url_for('report_incident') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
         <p class="text-sm font-semibold text-slate-800">Incident report</p>

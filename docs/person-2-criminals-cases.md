@@ -161,9 +161,11 @@ Also load the dropdown lists: distinct crimes, distinct nationalities, all jails
 ## One court case (police)
 
 **Function:** `proceeding_detail`  
-**When:** police click **Open** on a case.
+**When:** police click **Open** on a case, or **Promote to criminal case** on an incident.
 
 The number in the URL is `irid`.
+
+The public cannot create criminal cases. Police promote an existing incident report by assigning the required fields (judge, evidence, involved criminals).
 
 This page has **three** forms. Check which one was submitted:
 

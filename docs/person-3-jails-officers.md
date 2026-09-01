@@ -114,30 +114,18 @@ Then `db.commit()` and show this page again.
 
 ---
 
-## Jail info list (civilian)
+## Jail info list (not public)
 
-**Function:** `jail_info`  
-**When:** civilian clicks **Jail info**.
+Civilians do **not** get jail info. Do not send them to `jail_info`. If `/jail-info` is opened, send them home.
 
-Same numbers as the police jail list (capacity and how many people), but **no** add/edit.
-
-**Give the page:** `jails` = `JID`, `Name`, `Location`, `Capacity`, `occupancy`
+Police use **Jails** (`jails` / `jail_detail`) instead.
 
 ---
 
-## One jail, public view (civilian)
+## One jail, public view (not used)
 
 **Function:** `jail_info_detail`  
-**When:** civilian clicks **Facility details**.
-
-The number in the URL is `jid`.
-
-**SQL:** that jail + people in it. Only show `Name`, `Crime`, `Age` (not ids).
-
-**Give the page:**
-
-- `jail` = `JID`, `Name`, `Location`, `Capacity`, `occupancy`
-- `inmates` = `Name`, `Crime`, `Age`
+Same as above: civilians do not see facility details. Redirect home.
 
 ---
 
@@ -188,36 +176,19 @@ Then show this page again.
 
 ---
 
-## Victim cases (civilian)
+## Victim reports (civilian)
 
 **Function:** `victim_cases`  
-**When:** civilian clicks **My cases**.
+**When:** someone opens `/my-cases`. This is **not** in the public nav.
 
-**Opening the page:**
+Civilians **cannot** create criminal cases. They only file incident reports (`report_incident`).
 
-Reports this person is a victim of (`Targeted` where `UID` = `session["uid"]`), plus judge/evidence from `"Criminal cases"` if it exists.
+**Opening the page:** list this person’s incident reports (`ReportedUID` = signed-in user), and show judge/evidence if police later promoted the report (`"Criminal cases"`).
 
 **Give the page:** `cases` = `IRID`, `Date`, `location`, `AccusedName`, `Judge`, `Evidence`
 
-**Clicking Submit case:**
-
-Form boxes: `Date`, `incident_location`, `AccusedName`, `Description`, `Evidence`.
-
-Do these inserts (in order):
-
-1. `"Incident Reports"` — place column is `"Incident Location"`. Set `ReportedUID` to `session["uid"]`.
-2. `Victim` — only if this person is not already in `Victim`.
-3. `Targeted` — this `UID` + the new report id.
-4. If they typed evidence: `"Criminal cases"` (`Evidence`, `IRID`). `Judge` can be empty.
-
-Get the new report id with:
+**If they POST:** do **not** insert into `"Criminal cases"`. Send them to file an incident instead:
 
 ```python
-irid = db.execute("SELECT last_insert_rowid()").fetchone()[0]
-```
-
-Then `db.commit()` and:
-
-```python
-return redirect(url_for("victim_cases"))
+return redirect(url_for("report_incident"))
 ```

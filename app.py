@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, g, session
+from datetime import date
 import sqlite3
 import random
 
@@ -111,7 +112,7 @@ def logout():
 
 @app.route("/dashboard")
 def dashboard():
-    ## to do: counts + recent incidents + recent criminals
+    
     if not check_login():
         return redirect("/login")
     role = session.get("role")
@@ -119,33 +120,72 @@ def dashboard():
     db = get_db()
     user = db.execute("SELECT * FROM USER WHERE UID = ?", (user_id,)).fetchone()
     if role == "police":
-        return render_template("dashboard.html", user=user)
+        officers_count = db.execute("select count(*) as officers from Police").fetchone()
+        incidents_count = db.execute("select count(*) as incidents from 'Incident Reports'").fetchone()
+        criminals_count = db.execute("select count(*) as criminals from Criminal").fetchone()
+        jails_count = db.execute("select count(*) as jails from Jail").fetchone()
+        stats = {
+            "officers": officers_count[0],
+            "incidents": incidents_count[0],
+            "criminals": criminals_count[0],
+            "jails": jails_count[0]
+        }
+        incidents = db.execute("select IRID, Date, incident_location as location, AccusedName from 'Incident Reports' order by Date desc").fetchall()
+        criminals = db.execute("select CID, Name, Crime, Age from Criminal").fetchall()
+        return render_template("dashboard.html", user=user, stats=stats, incidents=incidents, criminals=criminals)
+
     else:
-        return render_template("user_dashboard.html", user=user)
+        reports = db.execute("select IRID, Date, incident_location as location, AccusedName from 'Incident Reports' where ReportedUID = ? order by Date desc", (session.get("loggedin_UID"),)).fetchall()
+        return render_template("user_dashboard.html", user=user, reports=reports)
 
 
 
 @app.route("/incidents")
 def incidents():
     ## to do: list Incident Reports
-    return render_template("incidents.html")
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
+    db = get_db()
+    incidents = db.execute("select i.IRID, i.Date, i.incident_location as location, i.AccusedName, u.Name as reporter_name, count(w.UID) as officer_count from 'Incident Reports' i join User u on i.ReportedUID = u.UID left join Works_on w on i.IRID = w.IRID group by i.IRID").fetchall()
+    return render_template("incidents.html", incidents=incidents)
+
 
 
 @app.route("/incidents/<int:irid>", methods=["GET", "POST"])
 def incident_detail(irid):
     ## to do: GET report + victims + officers; POST assign Works_on
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     return render_template("incident_detail.html")
 
 
 @app.route("/report", methods=["GET", "POST"])
 def report_incident():
     ## to do: POST insert Incident Reports
-    return render_template("report_incident.html")
+    if not check_login():
+        return redirect("/login")
+    if request.method == "GET":
+        return render_template("report_incident.html", today=date.today().isoformat())
+    if request.method == "POST":
+        db = get_db()
+        incident_date = request.form.get("Date")
+        incident_location = request.form.get("incident_location")
+        accused_name = request.form.get("AccusedName")
+        description = request.form.get("Description")
+        db.execute("INSERT INTO 'Incident Reports' (Date, incident_location, AccusedName, Description, ReportedUID) VALUES (?, ?, ?, ?, ?)", (incident_date, incident_location, accused_name, description, session.get("loggedin_UID")))
+        db.commit()
+        return redirect("/dashboard")
 
 
 @app.route("/analytics")
 def analytics():
     ## to do: GROUP BY Incident Location and by time-of-day
+    if not check_login():
+        return redirect("/login")
     return render_template("analytics.html")
 
 
@@ -157,6 +197,8 @@ def criminals():
     ## done
     if not check_login():
             return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/search")
     if request.method == "GET":
         db = get_db()
         criminal = db.execute("SELECT * FROM CRIMINAL").fetchall()
@@ -182,6 +224,8 @@ def criminals():
 def criminal_detail(cid):
     if not check_login():
             return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/search")
     db = get_db()
     if request.method == "GET":
         criminal = db.execute("SELECT * FROM CRIMINAL WHERE CID = ?", (cid,)).fetchone()
@@ -221,12 +265,20 @@ def search_criminals():
 @app.route("/proceedings")
 def proceedings():
     ## to do: list Incident Reports left join Criminal cases
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     return render_template("proceedings.html")
 
 
 @app.route("/proceedings/<int:irid>", methods=["GET", "POST"])
 def proceeding_detail(irid):
     ## to do: GET case file; POST update Judge/Evidence, link criminals, assign officers
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     return render_template("proceeding_detail.html")
 
 
@@ -238,6 +290,8 @@ def jails():
     ## done
     if not check_login():
             return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     if request.method == "GET":
         db = get_db()
         jail = db.execute("SELECT * FROM Jail").fetchall()
@@ -258,6 +312,8 @@ def jail_detail(jid):
     ## done
     if not check_login():
             return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     if request.method == "GET":
         db = get_db()
         jail = db.execute("SELECT j.*, Count(c.CID) as Occupancy FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID WHERE j.JID = ?", (jid,)).fetchone()
@@ -277,6 +333,8 @@ def jail_detail(jid):
 def update_jail():
     if not check_login():
             return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
     if request.method == "POST":
         db = get_db()
         jid = request.form.get("JID")
@@ -290,14 +348,16 @@ def update_jail():
 
 @app.route("/jail-info")
 def jail_info():
-    ## to do: Jail + occupancy counts
-    return render_template("jail_info.html")
+    if not check_login():
+        return redirect("/login")
+    return redirect("/dashboard")
 
 
 @app.route("/jail-info/<int:jid>")
 def jail_info_detail(jid):
-    ## to do: one Jail + public inmate list
-    return render_template("jail_info_detail.html")
+    if not check_login():
+        return redirect("/login")
+    return redirect("/dashboard")
 
 
 @app.route("/officers")
@@ -314,8 +374,15 @@ def officer_detail(uid):
 
 @app.route("/my-cases", methods=["GET", "POST"])
 def victim_cases():
-    ## to do: GET this victim's cases; POST Incident Reports + Targeted + Criminal cases
-    return render_template("victim_cases.html")
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") == "police":
+        return redirect("/incidents")
+    if request.method == "POST":
+        return redirect("/report")
+    db = get_db()
+    cases = db.execute("select i.IRID, i.Date, i.incident_location as location, i.AccusedName, c.Judge, c.Evidence from 'Incident Reports' i left join 'Criminal cases' c on i.IRID = c.IRID where i.ReportedUID = ? order by i.Date desc", (session.get("loggedin_UID"),)).fetchall()
+    return render_template("victim_cases.html", cases=cases)
 
 
 if __name__ == "__main__":

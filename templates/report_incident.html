@@ -6,14 +6,14 @@
 <div class="mb-8">
     <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Report</p>
     <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">Incident report</h1>
-    <p class="mt-2 text-sm text-slate-500">Creates a row in Incident Reports. ReportedUID should be the signed-in user.</p>
+    <p class="mt-2 text-sm text-slate-500">Public and police can file an incident. Only police can later promote it to a criminal case.</p>
 </div>
 
 <article class="mx-auto max-w-xl rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/50">
     <form action="{{ url_for('report_incident') }}" method="post" class="flex flex-col gap-4">
         <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
             Date
-            <input type="date" name="Date" required class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+            <input type="date" name="Date" required min="1900-01-01" max="{{ today }}" onclick="this.showPicker && this.showPicker()" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100">
         </label>
         <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
             Incident location

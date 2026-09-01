@@ -153,10 +153,10 @@ The number in the URL is `irid` (the report id).
 
 ---
 
-## File a report (civilian)
+## File a report (public and police)
 
 **Function:** `report_incident`  
-**When:** civilian clicks **Report**.
+**When:** a civilian or a police officer clicks **Report**.
 
 **If they are just opening the page:** show the form (already there). Do not pass extra data.
 
@@ -167,18 +167,20 @@ Form boxes: `Date`, `incident_location`, `AccusedName`, `Description`.
 `INSERT` into `"Incident Reports"`. Set `ReportedUID` to `session["uid"]`.  
 Column name for the place is `"Incident Location"`.
 
-Then send them to home:
+Then send them to the dashboard:
 
 ```python
-return redirect(url_for("user_dashboard"))
+return redirect(url_for("dashboard"))
 ```
+
+Only police can later promote a report to a criminal case (Person 2, `proceeding_detail`).
 
 ---
 
-## Analytics (police)
+## Analytics (public and police)
 
 **Function:** `analytics`  
-**When:** police click **Analytics**.
+**When:** police or a civilian clicks **Analytics**.
 
 **SQL:**
 
