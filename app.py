@@ -467,7 +467,7 @@ def officers():
     if session.get("role") != "police" or session.get("issupervisor") == False:
         return redirect("/dashboard")
     db = get_db()
-    officers = db.execute("SELECT p.UID, u.Name, p.rank, p.department, p.patrol_area, p.badge_no FROM Police p JOIN User u ON p.UID = u.UID where p.supervisor = ?", (session.get("loggedin_UID"),)).fetchall()
+    officers = db.execute("SELECT p.UID, u.Name, p.rank, p.department, p.patrol_area, p.badge_no, count(a.UID) as arrests FROM 'Arrested By' a join Police p on a.UID = p.UID join User u on p.UID = u.UID where p.supervisor = ? group by p.UID having arrests > 0", (session.get("loggedin_UID"),)).fetchall()
     return render_template("officers.html", officers=officers)
 
 
@@ -479,8 +479,27 @@ def officer_detail(uid):
     if session.get("role") != "police" or session.get("issupervisor") == False:
         return redirect("/dashboard")
     db = get_db()
-    officer = db.execute("SELECT p.UID, u.phone, u.age, u.gender, u.Name, p.rank, p.department, p.patrol_area, p.badge_no, p.number_of_arrests FROM Police p JOIN User u ON p.UID = u.UID WHERE p.UID = ?", (uid,)).fetchone()
-    return render_template("officer_detail.html", officer=officer)
+    if request.method == "GET":
+        officer = db.execute("SELECT p.UID, u.phone, u.age, u.gender, u.Name, p.rank, p.department, p.patrol_area, p.badge_no, count(a.UID) as arrests FROM 'Arrested By' a join Police p on a.UID = p.UID join User u on p.UID = u.UID where p.UID = ? group by p.UID having arrests > 0", (uid,)).fetchone()
+        supervisors = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID WHERE p.issupervisor = true AND p.UID != ?", (session.get("loggedin_UID"),)).fetchall()
+        return render_template("officer_detail.html", officer=officer, supervisors=supervisors)
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "update_police":
+            badge_no = request.form.get("badge_no")
+            rank = request.form.get("rank")
+            department = request.form.get("department")
+            patrol_area = request.form.get("patrol_area")
+            print(badge_no, rank, department, patrol_area, uid)
+            db.execute("UPDATE POLICE SET badge_no = ?, rank = ?, department = ?, patrol_area = ? WHERE UID = ?", (badge_no, rank, department, patrol_area, uid))
+            db.commit()
+            return redirect(f"/officers/{uid}")
+        if action == "transfer_supervisor":
+            supervisor = request.form.get("supervisor")
+            db.execute("UPDATE POLICE SET supervisor = ? WHERE UID = ?", (supervisor, uid))
+            db.commit()
+            return redirect(f"/officers/{uid}")
 
 
 @app.route("/my-cases", methods=["GET", "POST"])
