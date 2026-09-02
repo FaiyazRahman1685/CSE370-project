@@ -3,14 +3,13 @@
 {% block title %}Dashboard · Sentinel{% endblock %}
 
 {# stats: officers, incidents, criminals, jails
-   incidents: IRID, Date, location, AccusedName
+   own_incidents: IRID, Date, location, AccusedName  (cases this officer is assigned to)
    criminals: CID, Name, Crime, Age #}
 
 {% set stats = stats if stats is defined else {"officers": 8, "incidents": 24, "criminals": 17, "jails": 3} %}
-{% set incidents = incidents if incidents is defined else [
+{% set own_incidents = own_incidents if own_incidents is defined else [
     {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin"},
     {"IRID": 11, "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury"},
-    {"IRID": 10, "Date": "2026-08-09", "location": "Mirpur-10", "AccusedName": "Unknown"},
 ] %}
 {% set criminals = criminals if criminals is defined else [
     {"CID": 101, "Name": "Karim Uddin", "Crime": "Theft", "Age": 31},
@@ -79,10 +78,10 @@
 <section class="mt-6 grid gap-6 lg:grid-cols-2">
     <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
         <div class="border-b border-slate-100 px-5 py-4">
-            <h2 class="font-semibold text-slate-800">Recent incidents</h2>
-            <p class="text-xs text-slate-500">Latest reports from the case file</p>
+            <h2 class="font-semibold text-slate-800">Your assigned cases</h2>
+            <p class="text-xs text-slate-500">Incidents you are working on</p>
         </div>
-        {% if incidents %}
+        {% if own_incidents %}
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -91,22 +90,26 @@
                         <th class="px-5 py-3 font-medium">Date</th>
                         <th class="px-5 py-3 font-medium">Location</th>
                         <th class="px-5 py-3 font-medium">Accused</th>
+                        <th class="px-5 py-3 font-medium"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    {% for incident in incidents %}
+                    {% for incident in own_incidents %}
                     <tr class="text-slate-700">
                         <td class="px-5 py-3 font-medium">{{ incident.IRID }}</td>
                         <td class="px-5 py-3">{{ incident.Date or "—" }}</td>
                         <td class="px-5 py-3">{{ incident.location or "—" }}</td>
                         <td class="px-5 py-3">{{ incident.AccusedName or "—" }}</td>
+                        <td class="px-5 py-3 text-right">
+                            <a href="{{ url_for('incident_detail', irid=incident.IRID) }}" class="font-medium text-blue-600 hover:text-blue-700">View</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% else %}
-        <div class="px-5 py-10 text-center text-sm text-slate-500">No incident reports yet.</div>
+        <div class="px-5 py-10 text-center text-sm text-slate-500">No cases assigned to you yet.</div>
         {% endif %}
     </article>
 

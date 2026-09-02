@@ -164,9 +164,9 @@ def dashboard():
             "criminals": criminals_count[0],
             "jails": jails_count[0]
         }
-        incidents = db.execute("select IRID, Date, incident_location as location, AccusedName from 'Incident Reports' order by Date desc").fetchall()
+        own_incidents = db.execute("select i.IRID, i.Date, i.incident_location as location, i.AccusedName from 'Incident Reports' i join Works_on w on i.IRID = w.IRID where w.UID = ? order by i.Date desc", (session.get("loggedin_UID"),)).fetchall()
         criminals = db.execute("select CID, Name, Crime, Age from Criminal").fetchall()
-        return render_template("dashboard.html", user=user, stats=stats, incidents=incidents, criminals=criminals)
+        return render_template("dashboard.html", user=user, stats=stats, own_incidents=own_incidents, criminals=criminals)
 
     else:
         reports = db.execute("select IRID, Date, incident_location as location, AccusedName from 'Incident Reports' where ReportedUID = ? order by Date desc", (session.get("loggedin_UID"),)).fetchall()
@@ -262,8 +262,16 @@ def analytics():
     ## to do: GROUP BY Incident Location and by time-of-day
     if not check_login():
         return redirect("/login")
-    
-    return render_template("analytics.html")
+    db = get_db()
+    hot_zones = db.execute("select incident_location as location, count(*) as count, count(*) * 100.0 / (select count(*) from 'Incident Reports') as pct from 'Incident Reports' group by incident_location").fetchall()
+    crimes_by_day = db.execute("select strftime('%Y-%m-%d', Date) as label, count(*) as count, count(*) * 100.0 / (select count(*) from 'Incident Reports') as pct from 'Incident Reports' group by label").fetchall()
+    crimes_by_month = db.execute("select strftime('%Y-%m', Date) as label, count(*) as count, count(*) * 100.0 / (select count(*) from 'Incident Reports') as pct from 'Incident Reports' group by label").fetchall()
+    crimes_by_year = db.execute("select strftime('%Y', Date) as label, count(*) as count, count(*) * 100.0 / (select count(*) from 'Incident Reports') as pct from 'Incident Reports' group by label").fetchall()
+    totals = db.execute("select count(*) as incidents, count(distinct incident_location) as locations from 'Incident Reports'").fetchone()
+    peak_day = db.execute("select strftime('%Y-%m-%d', Date) as label, count(*) as count from 'Incident Reports' group by label order by count desc limit 1").fetchone()
+    peak_month = db.execute("select strftime('%Y-%m', Date) as label, count(*) as count from 'Incident Reports' group by label order by count desc limit 1").fetchone()
+    peak_year = db.execute("select strftime('%Y', Date) as label, count(*) as count from 'Incident Reports' group by label order by count desc limit 1").fetchone()
+    return render_template("analytics.html", hot_zones=hot_zones, crimes_by_day=crimes_by_day, crimes_by_month=crimes_by_month, crimes_by_year=crimes_by_year, totals=totals, peak_day=peak_day, peak_month=peak_month, peak_year=peak_year)
 
 
 # --- Person 2: criminals, search, court cases ---
@@ -412,7 +420,7 @@ def jail_detail(jid):
         jail = db.execute("SELECT j.*, Count(c.CID) as Occupancy FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID WHERE j.JID = ?", (jid,)).fetchone()
         inmates = db.execute("SELECT * FROM Criminal WHERE JID = ?", (jid,)).fetchall()
         jailers = db.execute("SELECT j.UID, u.Name, p.badge_no, p.rank FROM Jailor j JOIN User u ON j.UID = u.UID JOIN Police p ON j.UID = p.UID WHERE j.JID = ?", (jid,)).fetchall()
-        officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID").fetchall()
+        officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID where p.UID not in (SELECT distinct UID FROM Jailor)").fetchall()
         return render_template("jail_detail.html", jail=jail, inmates=inmates, jailors=jailers, officers=officers)
     
     if request.method == "POST":
