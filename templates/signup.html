@@ -157,6 +157,14 @@
                             class="h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         >
                     </label>
+                    <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                        Are you a supervisor?
+                        <input
+                            type="checkbox"
+                            name="issupervisor"
+                            class="h-5 w-5 rounded-xl border border-slate-200 bg-white text-black outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        >
+                    </label>
                 </div>
 
                 <button
@@ -179,7 +187,7 @@ function togglePoliceFields() {
     var isPolice = document.querySelector('input[name="role"]:checked').value === "police";
     var fields = document.getElementById("police-fields");
     fields.classList.toggle("hidden", !isPolice);
-    fields.querySelectorAll("input:not([name='supervisor'])").forEach(function (input) {
+    fields.querySelectorAll("input:not([name='supervisor']):not([name='issupervisor'])").forEach(function (input) {
         input.required = isPolice;
     });
 }

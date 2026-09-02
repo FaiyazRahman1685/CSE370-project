@@ -104,7 +104,8 @@ def signup():
             department = request.form.get("department")
             patrol_area = request.form.get("patrol_area")
             badge_no = request.form.get("badge_no")
-            db.execute("insert into police (UID, rank, supervisor, department, patrol_area, badge_no) values (?, ?, ?, ?, ?, ?)", (uid, rank, supervisor, department, patrol_area, badge_no))
+            issupervisor = request.form.get("issupervisor")
+            db.execute("insert into police (UID, rank, supervisor, department, patrol_area, badge_no, issupervisor) values (?, ?, ?, ?, ?, ?, ?)", (uid, rank, supervisor, department, patrol_area, badge_no, issupervisor))
 
         db.commit()
         return redirect("/login")
@@ -125,6 +126,9 @@ def login():
                 session["loggedin_UID"] = user["UID"]
                 session["role"] = user["role"]
                 session["name"] = user["name"]
+                if session["role"] == "police":
+                    police = db.execute("SELECT issupervisor FROM POLICE WHERE UID = ?", (session["loggedin_UID"],)).fetchone()
+                    session["issupervisor"] = police["issupervisor"]
                 return redirect("/dashboard")
             else:
                 return render_template("login.html", error="Invalid password")
@@ -273,7 +277,7 @@ def criminals():
         return redirect("/search")
     if request.method == "GET":
         db = get_db()
-        criminal = db.execute("SELECT * FROM CRIMINAL").fetchall()
+        criminal = db.execute("SELECT c.CID, c.Name, c.Age, c.Crime, c.Gender, c.Nationality, j.Name as jail_name, c.time_sentenced FROM CRIMINAL c LEFT JOIN JAIL j ON c.JID = j.JID").fetchall()
         jail = db.execute("SELECT * FROM JAIL").fetchall()
         return render_template("criminals.html", criminals=criminal, jails=jail)
 
@@ -302,7 +306,8 @@ def criminal_detail(cid):
         jail = db.execute("SELECT * FROM JAIL WHERE JID = ?", (criminal["JID"],)).fetchone()
         arrest = db.execute("SELECT * FROM 'Arrested By' WHERE CID = ?", (cid,)).fetchall()
         case = db.execute("SELECT * FROM 'Criminal Involvement' WHERE CID = ?", (cid,)).fetchall()
-        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, case=case)
+        jails = db.execute("SELECT * FROM JAIL").fetchall()
+        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, case=case, jails=jails)
 
     if request.method == "POST":
         if session.get("role") != "police":
@@ -432,29 +437,23 @@ def update_jail():
         return redirect(f"/jails/{jid}")    
     
 
-@app.route("/jail-info")
-def jail_info():
-    if not check_login():
-        return redirect("/login")
-    return redirect("/dashboard")
-
-
-@app.route("/jail-info/<int:jid>")
-def jail_info_detail(jid):
-    if not check_login():
-        return redirect("/login")
-    return redirect("/dashboard")
-
-
 @app.route("/officers")
 def officers():
     ## to do: SELECT police profiles joined with USER
+    if not check_login():
+        return redirect("/login")
+    if not session.get("issupervisor"):
+        return redirect("/dashboard")
     return render_template("officers.html")
 
 
 @app.route("/officers/<int:uid>", methods=["GET", "POST"])
 def officer_detail(uid):
     ## to do: GET officer + team; POST update POLICE/USER (supervisor)
+    if not check_login():
+        return redirect("/login")
+    if not session.get("issupervisor"):
+        return redirect("/dashboard")
     return render_template("officer_detail.html")
 
 

@@ -44,6 +44,7 @@ CREATE TABLE POLICE (
     department TEXT,
     rank TEXT,
     supervisor INTEGER,
+    issupervisor boolean DEFAULT FALSE,
     FOREIGN KEY (UID) REFERENCES USER(UID),
     FOREIGN KEY (supervisor) REFERENCES POLICE(UID)
 );

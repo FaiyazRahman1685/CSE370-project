@@ -37,7 +37,9 @@
                     {{ nav_link(url_for("dashboard"), "Dashboard", path == "/dashboard") }}
                     {{ nav_link(url_for("criminals"), "Criminals", path.startswith("/criminals")) }}
                     {{ nav_link(url_for("jails"), "Jails", path.startswith("/jails")) }}
+                    {% if session.get("issupervisor") %}
                     {{ nav_link(url_for("officers"), "Officers", path.startswith("/officers")) }}
+                    {% endif %}
                     {{ nav_link(url_for("analytics"), "Analytics", path.startswith("/analytics")) }}
                     {{ nav_link(url_for("incidents"), "Cases", path.startswith("/incidents")) }}
                     {{ nav_link(url_for("report_incident"), "Report", path.startswith("/report")) }}
