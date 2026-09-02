@@ -318,7 +318,7 @@ def criminal_detail(cid):
         officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID where p.UID not in (SELECT distinct UID FROM 'Arrested By')").fetchall()
         case = db.execute("SELECT * FROM 'Criminal Involvement' WHERE CID = ?", (cid,)).fetchall()
         jails = db.execute("SELECT * FROM JAIL").fetchall()
-        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, officers=officers, case=case, jails=jails)
+        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, all_officers=officers, case=case, jails=jails)
 
     if request.method == "POST":
         if session.get("role") != "police":
@@ -396,7 +396,7 @@ def jails():
         return redirect("/dashboard")
     if request.method == "GET":
         db = get_db()
-        jail = db.execute("SELECT * FROM Jail").fetchall()
+        jail = db.execute("SELECT j.JID, j.Name, j.Location, j.Capacity, Count(c.CID) as Occupancy, Count(jr.UID) as jailor_count FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID LEFT JOIN Jailor jr ON j.JID = jr.JID GROUP BY j.JID").fetchall()
         return render_template("jails.html", jails=jail)
         
     if request.method == "POST":
