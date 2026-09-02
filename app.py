@@ -395,7 +395,7 @@ def jails():
         return redirect("/dashboard")
     if request.method == "GET":
         db = get_db()
-        jail = db.execute("SELECT * FROM Jail").fetchall()
+        jail = db.execute("SELECT j.JID, j.Name, j.Location, j.Capacity, Count(c.CID) as Occupancy, Count(jr.UID) as jailor_count FROM Jail j LEFT JOIN Criminal c ON j.JID = c.JID LEFT JOIN Jailor jr ON j.JID = jr.JID GROUP BY j.JID").fetchall()
         return render_template("jails.html", jails=jail)
         
     if request.method == "POST":

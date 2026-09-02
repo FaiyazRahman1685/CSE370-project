@@ -6,6 +6,7 @@
    jail: Name  (optional if jail_name is not on criminal)
    jails: JID, Name
    arrests / arrest: Date, officer_name, badge_no
+   all_officers: UID, name  (dropdown to attach an arresting officer)
    cases / case: IRID, Date, location #}
 
 {% set is_police = session.get("role") == "police" %}
@@ -17,6 +18,7 @@
 {% set jails = jails if jails is defined else [{"JID": 1, "Name": "Dhaka Central Jail"}, {"JID": 2, "Name": "Kashimpur Central Jail"}] %}
 {% set arrests = arrests if arrests is defined else (arrest if arrest is defined else [{"Date": "2026-03-02", "officer_name": "rahman", "badge_no": "BD-1042"}]) %}
 {% set cases = cases if cases is defined else (case if case is defined else [{"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2"}]) %}
+{% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
 {% set jail_label = criminal.jail_name or (jail.Name if jail is defined and jail else none) %}
 
 {% block page %}
@@ -126,6 +128,19 @@
             </ul>
             {% else %}
             <p class="px-5 py-8 text-center text-sm text-slate-500">No arrest record yet.</p>
+            {% endif %}
+            {% if is_police %}
+            <form action="{{ url_for('criminal_detail', cid=criminal.CID) }}" method="post" class="flex flex-col gap-2 border-t border-slate-100 p-4 sm:flex-row">
+                <input type="hidden" name="action" value="attach_officer">
+                <select name="UID" required class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                    <option value="">Attach an officer</option>
+                    {% for officer in all_officers %}
+                    <option value="{{ officer.UID }}">{{ officer.name or officer.Name }}{% if officer.badge_no %} · {{ officer.badge_no }}{% endif %}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="Date" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>
+            </form>
             {% endif %}
         </article>
 
