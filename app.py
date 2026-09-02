@@ -298,6 +298,7 @@ def criminals():
 
 @app.route("/criminals/<int:cid>", methods=["GET", "POST"])
 def criminal_detail(cid):
+    # done
     if not check_login():
             return redirect("/login")
     db = get_db()
@@ -439,12 +440,19 @@ def update_jail():
 
 @app.route("/officers")
 def officers():
+    # done
     ## to do: SELECT police profiles joined with USER
     if not check_login():
         return redirect("/login")
     if not session.get("issupervisor"):
         return redirect("/dashboard")
-    return render_template("officers.html")
+    if not check_login():
+        return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
+    db = get_db()
+    officers = db.execute("SELECT p.UID, u.Name, p.rank, p.department, p.patrol_area, p.badge_no FROM Police p JOIN User u ON p.UID = u.UID").fetchall()
+    return render_template("officers.html", officers=officers)
 
 
 @app.route("/officers/<int:uid>", methods=["GET", "POST"])
@@ -454,6 +462,12 @@ def officer_detail(uid):
         return redirect("/login")
     if not session.get("issupervisor"):
         return redirect("/dashboard")
+    if not check_login():
+            return redirect("/login")
+    if session.get("role") != "police":
+        return redirect("/dashboard")
+
+
     return render_template("officer_detail.html")
 
 

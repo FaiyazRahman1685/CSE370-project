@@ -50,7 +50,7 @@
                         <td class="px-5 py-3">{{ criminal.Name }}</td>
                         <td class="px-5 py-3">{{ criminal.Crime or "—" }}</td>
                         <td class="px-5 py-3">{{ criminal.Age or "—" }}</td>
-                        <td class="px-5 py-3">{{ criminal.jail_name or "—" }}</td>
+                        <td class="px-5 py-3">{{ criminal.JID or "—" }}</td>
                         <td class="px-5 py-3 text-right">
                             <a href="{{ url_for('criminal_detail', cid=criminal.CID) }}" class="font-medium text-blue-600 hover:text-blue-700">Open</a>
                         </td>
