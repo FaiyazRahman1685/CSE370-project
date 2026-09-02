@@ -298,8 +298,9 @@ def criminals():
         nationality = request.form.get("Nationality")
         crime = request.form.get("Crime")
         jail_id = request.form.get("JID")
+        height = request.form.get("Height")
         time_sentenced = request.form.get("time_sentenced")
-        db.execute("INSERT INTO CRIMINAL (Name, Age, Gender, Nationality, Crime, JID, time_sentenced) VALUES (?, ?, ?, ?, ?, ?, ?)", (name, age, gender, nationality, crime, jail_id, time_sentenced))
+        db.execute("INSERT INTO CRIMINAL (Name, Age, Gender, Nationality, Crime, JID, Height, time_sentenced) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (name, age, gender, nationality, crime, jail_id, height, time_sentenced))
         db.commit()
         return redirect("/criminals")
 
@@ -318,7 +319,7 @@ def criminal_detail(cid):
         officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID where p.UID not in (SELECT distinct UID FROM 'Arrested By')").fetchall()
         case = db.execute("SELECT * FROM 'Criminal Involvement' WHERE CID = ?", (cid,)).fetchall()
         jails = db.execute("SELECT * FROM JAIL").fetchall()
-        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, officers=officers, case=case, jails=jails)
+        return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, allofficers=officers, case=case, jails=jails)
 
     if request.method == "POST":
         if session.get("role") != "police":
@@ -329,8 +330,9 @@ def criminal_detail(cid):
         nationality = request.form.get("Nationality")
         crime = request.form.get("Crime")
         jail_id = request.form.get("JID")
+        height = request.form.get("Height")
         time_sentenced = request.form.get("time_sentenced")
-        db.execute("UPDATE CRIMINAL SET Name = ?, Age = ?, Gender = ?, Nationality = ?, Crime = ?, JID = ?, time_sentenced = ? WHERE CID = ?", (name, age, gender, nationality, crime, jail_id, time_sentenced, cid))
+        db.execute("UPDATE CRIMINAL SET Name = ?, Age = ?, Gender = ?, Nationality = ?, Crime = ?, JID = ?, Height = ?, time_sentenced = ? WHERE CID = ?", (name, age, gender, nationality, crime, jail_id, height, time_sentenced, cid))
         db.commit()
         return redirect("/criminals/{cid}".format(cid=cid))
 
