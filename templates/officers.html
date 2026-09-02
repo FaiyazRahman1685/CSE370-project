@@ -4,11 +4,7 @@
 
 {# officers: UID, name, badge_no, rank, department, patrol_area, arrests, supervisor_name #}
 
-{% set officers = officers if officers is defined else [
-    {"UID": 1, "name": "rahman", "badge_no": "BD-1042", "rank": "Inspector", "department": "Investigation", "patrol_area": "Gulshan", "arrests": 12, "supervisor_name": None},
-    {"UID": 3, "name": "ayesha", "badge_no": "BD-2218", "rank": "Sergeant", "department": "Patrol", "patrol_area": "Mirpur", "arrests": 7, "supervisor_name": "rahman"},
-    {"UID": 4, "name": "imran", "badge_no": "BD-3301", "rank": "Constable", "department": "Patrol", "patrol_area": "Motijheel", "arrests": 4, "supervisor_name": "rahman"},
-] %}
+{% set officers = officers|default([]) %}
 
 {% block page %}
 <div class="mb-8">
@@ -36,7 +32,7 @@
                 {% for officer in officers %}
                 <tr class="text-slate-700">
                     <td class="px-5 py-3 font-medium">{{ officer.badge_no or "—" }}</td>
-                    <td class="px-5 py-3">{{ officer.name }}</td>
+                    <td class="px-5 py-3">{{ officer.name or officer.Name }}</td>
                     <td class="px-5 py-3">{{ officer.rank or "—" }}</td>
                     <td class="px-5 py-3">{{ officer.department or "—" }}</td>
                     <td class="px-5 py-3">{{ officer.patrol_area or "—" }}</td>

@@ -11,17 +11,12 @@
    all_criminal: CID, Name #}
 
 {% set is_police = session.get("role") == "police" %}
-{% set incident = incident if incident is defined else {
-    "IRID": 12, "Date": "2026-08-14", "Description": "Phone snatched near the south gate of the market.",
-    "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima",
-    "Judge": none, "Evidence": none
-} %}
-{% set case = case if case is defined else (cases if cases is defined else incident) %}
-{% set victims = victims if victims is defined else [{"UID": 2, "name": "fatima"}] %}
-{% set officers = officers if officers is defined else [{"UID": 1, "name": "rahman", "badge_no": "BD-1042"}] %}
-{% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
-{% set involved_criminals = involved_criminals if involved_criminals is defined else [] %}
-{% set all_criminal = all_criminal if all_criminal is defined else [] %}
+{% set case = case if case is defined else (cases if cases is defined else none) %}
+{% set victims = victims|default([]) %}
+{% set officers = officers|default([]) %}
+{% set all_officers = all_officers|default([]) %}
+{% set involved_criminals = involved_criminals|default([]) %}
+{% set all_criminal = all_criminal|default([]) %}
 {% set judge = case.Judge if case is defined and case else incident.Judge %}
 {% set evidence = case.Evidence if case is defined and case else incident.Evidence %}
 {% set upgraded = judge or evidence %}

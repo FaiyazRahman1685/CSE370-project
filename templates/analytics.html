@@ -6,41 +6,11 @@
    crimes_by_day / crimes_by_month / crimes_by_year: label, count, pct
    totals: incidents, locations, peak_label #}
 
-{% set totals = totals if totals is defined else {"incidents": 24, "locations": 6, "peak_label": "1 Sep"} %}
-{% set hot_zones = hot_zones if hot_zones is defined else [
-    {"location": "Gulshan-2", "count": 8, "pct": 100},
-    {"location": "Motijheel", "count": 6, "pct": 75},
-    {"location": "Mirpur-10", "count": 5, "pct": 62},
-    {"location": "Dhanmondi", "count": 3, "pct": 38},
-    {"location": "Uttara", "count": 2, "pct": 25},
-] %}
-{% set crimes_by_day = crimes_by_day if crimes_by_day is defined else [
-    {"label": "27 Aug", "count": 2, "pct": 40},
-    {"label": "28 Aug", "count": 1, "pct": 20},
-    {"label": "29 Aug", "count": 3, "pct": 60},
-    {"label": "30 Aug", "count": 2, "pct": 40},
-    {"label": "31 Aug", "count": 4, "pct": 80},
-    {"label": "1 Sep", "count": 5, "pct": 100},
-    {"label": "2 Sep", "count": 3, "pct": 60},
-] %}
-{% set crimes_by_month = crimes_by_month if crimes_by_month is defined else [
-    {"label": "Mar", "count": 2, "pct": 25},
-    {"label": "Apr", "count": 3, "pct": 38},
-    {"label": "May", "count": 4, "pct": 50},
-    {"label": "Jun", "count": 2, "pct": 25},
-    {"label": "Jul", "count": 5, "pct": 62},
-    {"label": "Aug", "count": 8, "pct": 100},
-] %}
-{% set crimes_by_year = crimes_by_year if crimes_by_year is defined else [
-    {"label": "2023", "count": 6, "pct": 60},
-    {"label": "2024", "count": 10, "pct": 100},
-    {"label": "2025", "count": 4, "pct": 40},
-    {"label": "2026", "count": 8, "pct": 80},
-] %}
-
-{% set peak_day = peak_day if peak_day is defined else "1 Sep" %}
-{% set peak_month = peak_month if peak_month is defined else "August" %}
-{% set peak_year = peak_year if peak_year is defined else "2024" %}
+{% set totals = totals|default({"incidents": 0, "locations": 0}) %}
+{% set hot_zones = hot_zones|default([]) %}
+{% set crimes_by_day = crimes_by_day|default([]) %}
+{% set crimes_by_month = crimes_by_month|default([]) %}
+{% set crimes_by_year = crimes_by_year|default([]) %}
 
 {% block page %}
 <div class="mb-8">

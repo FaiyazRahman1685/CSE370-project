@@ -491,7 +491,6 @@ def officer_detail(uid):
             rank = request.form.get("rank")
             department = request.form.get("department")
             patrol_area = request.form.get("patrol_area")
-            print(badge_no, rank, department, patrol_area, uid)
             db.execute("UPDATE POLICE SET badge_no = ?, rank = ?, department = ?, patrol_area = ? WHERE UID = ?", (badge_no, rank, department, patrol_area, uid))
             db.commit()
             return redirect(f"/officers/{uid}")

@@ -4,11 +4,7 @@
 
 {# incidents: IRID, Date, location, AccusedName, reporter_name, officer_count, Judge #}
 
-{% set incidents = incidents if incidents is defined else [
-    {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin", "reporter_name": "fatima", "officer_count": 1},
-    {"IRID": 11, "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury", "reporter_name": "fatima", "officer_count": 1},
-    {"IRID": 10, "Date": "2026-08-09", "location": "Mirpur-10", "AccusedName": "Unknown", "reporter_name": "hasan", "officer_count": 0},
-] %}
+{% set incidents = incidents|default([]) %}
 
 {% block page %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

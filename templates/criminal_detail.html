@@ -10,15 +10,10 @@
    cases / case: IRID, Date, location #}
 
 {% set is_police = session.get("role") == "police" %}
-{% set criminal = criminal if criminal is defined else {
-    "CID": 101, "Name": "Karim Uddin", "Age": 31, "Crime": "Theft", "Height": 170,
-    "Gender": "M", "Nationality": "Bangladeshi", "JID": 1, "jail_name": "Dhaka Central Jail",
-    "time_sentenced": "5 years"
-} %}
-{% set jails = jails if jails is defined else [{"JID": 1, "Name": "Dhaka Central Jail"}, {"JID": 2, "Name": "Kashimpur Central Jail"}] %}
-{% set arrests = arrests if arrests is defined else (arrest if arrest is defined else [{"Date": "2026-03-02", "officer_name": "rahman", "badge_no": "BD-1042"}]) %}
-{% set cases = cases if cases is defined else (case if case is defined else [{"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2"}]) %}
-{% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
+{% set jails = jails|default([]) %}
+{% set arrests = arrests if arrests is defined else (arrest if arrest is defined else []) %}
+{% set cases = cases if cases is defined else (case if case is defined else []) %}
+{% set all_officers = all_officers|default([]) %}
 {% set jail_label = criminal.jail_name or (jail.Name if jail is defined and jail else none) %}
 
 {% block page %}

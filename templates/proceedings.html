@@ -4,11 +4,7 @@
 
 {# cases: IRID, Judge, Evidence, Date, location, AccusedName, criminal_count #}
 
-{% set cases = cases if cases is defined else [
-    {"IRID": 12, "Judge": "Hon. S. Ahmed", "Evidence": "CCTV stills, witness statement", "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin", "criminal_count": 1},
-    {"IRID": 11, "Judge": "Hon. R. Khan", "Evidence": "Bank records", "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury", "criminal_count": 1},
-    {"IRID": 9, "Judge": None, "Evidence": None, "Date": "2026-07-28", "location": "Mirpur-10", "AccusedName": "Unknown", "criminal_count": 0},
-] %}
+{% set cases = cases|default([]) %}
 
 {% block page %}
 <div class="mb-8">

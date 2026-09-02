@@ -5,15 +5,8 @@
 {# criminals: CID, Name, Age, Crime, Gender, Nationality, jail_name, time_sentenced
    jails: JID, Name  (for the assign-jail dropdown) #}
 
-{% set criminals = criminals if criminals is defined else [
-    {"CID": 101, "Name": "Karim Uddin", "Age": 31, "Crime": "Theft", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central", "time_sentenced": "5 years"},
-    {"CID": 102, "Name": "Nabila Chowdhury", "Age": 27, "Crime": "Fraud", "Gender": "F", "Nationality": "Bangladeshi", "jail_name": "Kashimpur", "time_sentenced": "3 years"},
-    {"CID": 103, "Name": "Faruk Hossain", "Age": 42, "Crime": "Robbery", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central", "time_sentenced": "8 years"},
-] %}
-{% set jails = jails if jails is defined else [
-    {"JID": 1, "Name": "Dhaka Central Jail"},
-    {"JID": 2, "Name": "Kashimpur Central Jail"},
-] %}
+{% set criminals = criminals|default([]) %}
+{% set jails = jails|default([]) %}
 
 {% block page %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

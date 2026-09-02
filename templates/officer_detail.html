@@ -1,25 +1,17 @@
 {% extends "app.html" %}
 
-{% block title %}{{ officer.name if officer is defined else "Officer" }} · Sentinel{% endblock %}
+{% block title %}{{ officer.name or officer.Name if officer is defined else "Officer" }} · Sentinel{% endblock %}
 
 {# officer: UID, name, phone, age, gender, role, badge_no, patrol_area, arrests, department, rank, supervisor
    supervisors: UID, name #}
 
-{% set officer = officer if officer is defined else {
-    "UID": 1, "name": "rahman", "phone": "01700000001", "age": 34, "gender": "M", "role": "police",
-    "badge_no": "BD-1042", "patrol_area": "Gulshan", "arrests": 12,
-    "department": "Investigation", "rank": "Inspector", "supervisor": None
-} %}
-{% set supervisors = supervisors if supervisors is defined else [
-    {"UID": 1, "name": "r"},
-    {"UID": 5, "name": "k"},
-] %}
+{% set supervisors = supervisors|default([]) %}
 
 {% block page %}
 <div class="mb-8">
     <a href="{{ url_for('officers') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">← All officers</a>
     <p class="mt-4 text-xs font-medium uppercase tracking-wide text-blue-600">Badge {{ officer.badge_no or "—" }}</p>
-    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">{{ officer.name }}</h1>
+    <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-800">{{ officer.name or officer.Name }}</h1>
     <p class="mt-2 text-sm text-slate-500">{{ officer.rank or "Officer" }} · {{ officer.department or "Unassigned" }}</p>
 </div>
 
@@ -33,7 +25,7 @@
             </div>
             <div class="rounded-xl bg-slate-50 px-4 py-3">
                 <dt class="text-xs text-slate-500">Name</dt>
-                <dd class="mt-1 font-medium text-slate-800">{{ officer.name or "—" }}</dd>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.name or officer.Name or "—" }}</dd>
             </div>
             <div class="rounded-xl bg-slate-50 px-4 py-3">
                 <dt class="text-xs text-slate-500">Phone</dt>
@@ -74,10 +66,10 @@
                 Patrol area
                 <input type="text" name="patrol_area" value="{{ officer.patrol_area or '' }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
             </label>
-            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
-                Arrests
-                <input type="number" name="arrests" value="{{ officer.arrests or 0 }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
-            </label>
+            <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2">
+                <p class="text-xs text-slate-500">Arrests</p>
+                <p class="mt-1 font-medium text-slate-800">{{ officer.arrests or 0 }}</p>
+            </div>
             <div class="sm:col-span-2">
                 <button type="submit" class="h-11 rounded-xl bg-blue-600 px-5 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Save police record</button>
             </div>
@@ -92,7 +84,7 @@
                 <option value="">None</option>
                 {% for person in supervisors %}
                 {% if person.UID != officer.UID %}
-                <option value="{{ person.UID }}" {% if officer.supervisor == person.UID %}selected{% endif %}>{{ person.name }}</option>
+                <option value="{{ person.UID }}" {% if officer.supervisor == person.UID %}selected{% endif %}>{{ person.name or person.Name }}</option>
                 {% endif %}
                 {% endfor %}
             </select>

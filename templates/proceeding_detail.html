@@ -7,15 +7,10 @@
    officers: UID, name, badge_no
    all_criminals / all_officers: dropdowns to link rows #}
 
-{% set case = case if case is defined else {
-    "IRID": 12, "Judge": "Hon. S. Ahmed", "Evidence": "CCTV stills from Gulshan-2, witness statement from shop owner.",
-    "Date": "2026-08-14", "Description": "Phone snatched near the south gate.",
-    "location": "Gulshan-2", "AccusedName": "Karim Uddin"
-} %}
-{% set criminals = criminals if criminals is defined else [{"CID": 101, "Name": "Karim Uddin", "Crime": "Theft"}] %}
-{% set officers = officers if officers is defined else [{"UID": 1, "name": "rahman", "badge_no": "BD-1042"}] %}
-{% set all_criminals = all_criminals if all_criminals is defined else [{"CID": 101, "Name": "Karim Uddin"}, {"CID": 102, "Name": "Nabila Chowdhury"}] %}
-{% set all_officers = all_officers if all_officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
+{% set criminals = criminals|default([]) %}
+{% set officers = officers|default([]) %}
+{% set all_criminals = all_criminals|default([]) %}
+{% set all_officers = all_officers|default([]) %}
 
 {% block page %}
 <div class="mb-8">
@@ -93,7 +88,7 @@
             <ul class="divide-y divide-slate-100 text-sm">
                 {% for officer in officers %}
                 <li class="flex items-center justify-between px-5 py-3">
-                    <span class="font-medium text-slate-800">{{ officer.name }}</span>
+                    <span class="font-medium text-slate-800">{{ officer.name or officer.Name }}</span>
                     <span class="text-slate-500">{{ officer.badge_no or "—" }}</span>
                 </li>
                 {% endfor %}
@@ -106,7 +101,7 @@
                 <select name="UID" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                     <option value="">Assign an officer</option>
                     {% for officer in all_officers %}
-                    <option value="{{ officer.UID }}">{{ officer.name }}</option>
+                    <option value="{{ officer.UID }}">{{ officer.name or officer.Name }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>

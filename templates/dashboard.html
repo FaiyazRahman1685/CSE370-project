@@ -6,15 +6,9 @@
    own_incidents: IRID, Date, location, AccusedName  (cases this officer is assigned to)
    criminals: CID, Name, Crime, Age #}
 
-{% set stats = stats if stats is defined else {"officers": 8, "incidents": 24, "criminals": 17, "jails": 3} %}
-{% set own_incidents = own_incidents if own_incidents is defined else [
-    {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin"},
-    {"IRID": 11, "Date": "2026-08-11", "location": "Motijheel", "AccusedName": "Nabila Chowdhury"},
-] %}
-{% set criminals = criminals if criminals is defined else [
-    {"CID": 101, "Name": "Karim Uddin", "Crime": "Theft", "Age": 31},
-    {"CID": 102, "Name": "Nabila Chowdhury", "Crime": "Fraud", "Age": 27},
-] %}
+{% set stats = stats|default({"officers": 0, "incidents": 0, "criminals": 0, "jails": 0}) %}
+{% set own_incidents = own_incidents|default([]) %}
+{% set criminals = criminals|default([]) %}
 
 {% block page %}
 <div class="mb-8">

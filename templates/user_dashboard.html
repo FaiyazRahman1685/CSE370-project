@@ -4,9 +4,7 @@
 
 {# reports: IRID, Date, location, AccusedName, Judge, Evidence #}
 
-{% set reports = reports if reports is defined else [
-    {"IRID": 12, "Date": "2026-08-14", "location": "Gulshan-2", "AccusedName": "Karim Uddin"},
-] %}
+{% set reports = reports|default([]) %}
 
 {% block page %}
 <div class="mb-8">

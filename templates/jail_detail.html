@@ -7,16 +7,10 @@
    jailors: UID, name, badge_no, rank
    officers: UID, name  (dropdown to assign a jailor) #}
 
-{% set jail = jail if jail is defined else {"JID": 1, "Name": "Dhaka Central Jail", "Location": "Keraniganj", "Capacity": 400, "occupancy": 312} %}
-{% set inmates = inmates if inmates is defined else [
-    {"CID": 101, "Name": "Karim Uddin", "Crime": "Theft", "time_sentenced": "5 years"},
-    {"CID": 103, "Name": "Faruk Hossain", "Crime": "Robbery", "time_sentenced": "8 years"},
-] %}
-{% set jailors = jailors if jailors is defined else [
-    {"UID": 1, "name": "rahman", "badge_no": "BD-1042", "rank": "Inspector"},
-] %}
-{% set officers = officers if officers is defined else [{"UID": 1, "name": "rahman"}, {"UID": 3, "name": "ayesha"}] %}
-{% set pct = ((jail.occupancy or 0) / jail.Capacity * 100) if jail.Capacity else 0 %}
+{% set inmates = inmates|default([]) %}
+{% set jailors = jailors|default([]) %}
+{% set officers = officers|default([]) %}
+{% set pct = ((jail.occupancy or jail.Occupancy or 0) / jail.Capacity * 100) if jail is defined and jail and jail.Capacity else 0 %}
 
 {% block page %}
 <div class="mb-8">
@@ -33,7 +27,7 @@
     </article>
     <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
         <p class="text-sm text-slate-500">Criminals housed</p>
-        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ jail.occupancy or inmates|length }}</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ jail.occupancy or jail.Occupancy or inmates|length }}</p>
     </article>
     <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
         <p class="text-sm text-slate-500">Occupancy</p>
@@ -88,7 +82,7 @@
             <ul class="divide-y divide-slate-100 text-sm">
                 {% for jailor in jailors %}
                 <li class="flex items-center justify-between px-5 py-3">
-                    <span class="font-medium text-slate-800">{{ jailor.name }}</span>
+                    <span class="font-medium text-slate-800">{{ jailor.name or jailor.Name }}</span>
                     <span class="text-slate-500">{{ jailor.badge_no }} · {{ jailor.rank or "—" }}</span>
                 </li>
                 {% endfor %}
@@ -101,7 +95,7 @@
                 <select name="UID" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
                     <option value="">Assign an officer</option>
                     {% for officer in officers %}
-                    <option value="{{ officer.UID }}">{{ officer.name }}</option>
+                    <option value="{{ officer.UID }}">{{ officer.name or officer.Name }}</option>
                     {% endfor %}
                 </select>
                 <button type="submit" class="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Add</button>

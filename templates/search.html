@@ -6,14 +6,11 @@
    crimes / nationalities / jails: dropdown options
    results: CID, Name, Age, Crime, Gender, Nationality, jail_name #}
 
-{% set filters = filters if filters is defined else {"crime": "", "gender": "", "nationality": "", "jail_id": ""} %}
-{% set crimes = crimes if crimes is defined else ["Theft", "Fraud", "Assault", "Robbery", "Drug offense", "Other"] %}
-{% set nationalities = nationalities if nationalities is defined else ["Bangladeshi", "Other"] %}
-{% set jails = jails if jails is defined else [{"JID": 1, "Name": "Dhaka Central Jail"}, {"JID": 2, "Name": "Kashimpur Central Jail"}] %}
-{% set results = results if results is defined else [
-    {"CID": 101, "Name": "Karim Uddin", "Age": 31, "Crime": "Theft", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central Jail"},
-    {"CID": 103, "Name": "Faruk Hossain", "Age": 42, "Crime": "Robbery", "Gender": "M", "Nationality": "Bangladeshi", "jail_name": "Dhaka Central Jail"},
-] %}
+{% set filters = filters|default({"crime": "", "gender": "", "nationality": "", "jail_id": ""}) %}
+{% set crimes = crimes|default([]) %}
+{% set nationalities = nationalities|default([]) %}
+{% set jails = jails|default([]) %}
+{% set results = results|default([]) %}
 
 {% block page %}
 <div class="mb-8">

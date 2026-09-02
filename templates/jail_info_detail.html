@@ -5,12 +5,8 @@
 {# jail: JID, Name, Location, Capacity, occupancy
    inmates: Name, Crime, Age  (public subset) #}
 
-{% set jail = jail if jail is defined else {"JID": 1, "Name": "Dhaka Central Jail", "Location": "Keraniganj, Dhaka", "Capacity": 400, "occupancy": 312} %}
-{% set inmates = inmates if inmates is defined else [
-    {"Name": "Karim Uddin", "Crime": "Theft", "Age": 31},
-    {"Name": "Faruk Hossain", "Crime": "Robbery", "Age": 42},
-] %}
-{% set pct = ((jail.occupancy or 0) / jail.Capacity * 100) if jail.Capacity else 0 %}
+{% set inmates = inmates|default([]) %}
+{% set pct = ((jail.occupancy or jail.Occupancy or 0) / jail.Capacity * 100) if jail is defined and jail and jail.Capacity else 0 %}
 
 {% block page %}
 <div class="mb-8">
@@ -27,7 +23,7 @@
     </article>
     <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
         <p class="text-sm text-slate-500">Criminals housed</p>
-        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ jail.occupancy or inmates|length }}</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-800">{{ jail.occupancy or jail.Occupancy or inmates|length }}</p>
     </article>
     <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
         <p class="text-sm text-slate-500">Occupancy</p>
