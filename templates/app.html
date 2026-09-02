@@ -39,6 +39,7 @@
                 {% if role == "police" %}
                     {{ nav_link(url_for("dashboard"), "Dashboard", path == "/dashboard") }}
                     {{ nav_link(url_for("criminals"), "Criminals", path.startswith("/criminals")) }}
+                    {{ nav_link(url_for("search_criminals"), "Search", path.startswith("/search")) }}
                     {{ nav_link(url_for("jails"), "Jails", path.startswith("/jails")) }}
                     {% if session.get("issupervisor") %}
                     {{ nav_link(url_for("officers"), "Officers", path.startswith("/officers")) }}

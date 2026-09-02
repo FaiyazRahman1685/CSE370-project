@@ -51,6 +51,10 @@
         <p class="text-sm font-semibold text-slate-800">Criminal profiles</p>
         <p class="mt-1 text-sm text-slate-500">Add, edit, and assign custody.</p>
     </a>
+    <a href="{{ url_for('search_criminals') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
+        <p class="text-sm font-semibold text-slate-800">Criminal search</p>
+        <p class="mt-1 text-sm text-slate-500">Filter records by crime, gender, nationality, or jail.</p>
+    </a>
     <a href="{{ url_for('jails') }}" class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:border-blue-300 hover:shadow-md">
         <p class="text-sm font-semibold text-slate-800">Jail management</p>
         <p class="mt-1 text-sm text-slate-500">Capacity, inmates, and jailors.</p>

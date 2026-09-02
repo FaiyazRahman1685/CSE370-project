@@ -315,8 +315,8 @@ def criminal_detail(cid):
     if request.method == "GET":
         criminal = db.execute("SELECT * FROM CRIMINAL WHERE CID = ?", (cid,)).fetchone()
         jail = db.execute("SELECT * FROM JAIL WHERE JID = ?", (criminal["JID"],)).fetchone()
-        arrest = db.execute("SELECT a.UID, u.Name, p.badge_no, p.rank FROM 'Arrested By' a JOIN User u ON a.UID = u.UID JOIN Police p ON a.UID = p.UID WHERE a.CID = ?", (cid,)).fetchall()
-        officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID where p.UID not in (SELECT distinct UID FROM 'Arrested By')").fetchall()
+        arrest = db.execute("SELECT a.UID, u.Name, a.Date, p.badge_no FROM 'Arrested By' a JOIN User u ON a.UID = u.UID JOIN Police p ON a.UID = p.UID WHERE a.CID = ?", (cid,)).fetchall()
+        officers = db.execute("SELECT p.UID, u.Name FROM Police p JOIN User u ON p.UID = u.UID where p.UID not in (SELECT distinct UID FROM 'Arrested By' where CID = ?)", (cid,)).fetchall()
         case = db.execute("SELECT * FROM 'Criminal Involvement' WHERE CID = ?", (cid,)).fetchall()
         jails = db.execute("SELECT * FROM JAIL").fetchall()
         return render_template("criminal_detail.html", criminal=criminal, jail=jail, arrest=arrest, all_officers=officers, case=case, jails=jails)
@@ -324,17 +324,25 @@ def criminal_detail(cid):
     if request.method == "POST":
         if session.get("role") != "police":
             return redirect("/criminals/{cid}".format(cid=cid))
-        name = request.form.get("Name").strip()
-        age = request.form.get("Age")
-        gender = request.form.get("Gender")
-        nationality = request.form.get("Nationality")
-        crime = request.form.get("Crime")
-        jail_id = request.form.get("JID")
-        height = request.form.get("Height")
-        time_sentenced = request.form.get("time_sentenced")
-        db.execute("UPDATE CRIMINAL SET Name = ?, Age = ?, Gender = ?, Nationality = ?, Crime = ?, JID = ?, Height = ?, time_sentenced = ? WHERE CID = ?", (name, age, gender, nationality, crime, jail_id, height, time_sentenced, cid))
-        db.commit()
-        return redirect("/criminals/{cid}".format(cid=cid))
+        action = request.form.get("action")
+        if action == "attach_officer":
+            officer = request.form.get("UID")
+            date = request.form.get("Date")
+            db.execute("INSERT INTO 'Arrested By' (UID, CID, Date) VALUES (?, ?, ?)", (officer, cid, date))
+            db.commit()
+            return redirect("/criminals/{cid}".format(cid=cid))
+        if action == "edit_criminal":
+            name = request.form.get("Name").strip()
+            age = request.form.get("Age")
+            gender = request.form.get("Gender")
+            nationality = request.form.get("Nationality")
+            crime = request.form.get("Crime")
+            jail_id = request.form.get("JID")
+            height = request.form.get("Height")
+            time_sentenced = request.form.get("time_sentenced")
+            db.execute("UPDATE CRIMINAL SET Name = ?, Age = ?, Gender = ?, Nationality = ?, Crime = ?, JID = ?, Height = ?, time_sentenced = ? WHERE CID = ?", (name, age, gender, nationality, crime, jail_id, height, time_sentenced, cid))
+            db.commit()
+            return redirect("/criminals/{cid}".format(cid=cid))
 
 
 @app.route("/search" , methods=["GET"])
@@ -377,9 +385,9 @@ def search_criminals():
 
     criminals = db.execute(query, params).fetchall()
     filters = {
-            "crime": crimes,
-            "gender": genders,
-            "nationality": nationalities,
+            "crime": crime,
+            "gender": gender,
+            "nationality": nationality,
             "jail_id": jail_id
         }
     
