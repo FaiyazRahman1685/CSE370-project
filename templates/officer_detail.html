@@ -2,22 +2,17 @@
 
 {% block title %}{{ officer.name if officer is defined else "Officer" }} · Sentinel{% endblock %}
 
-{# officer: UID, name, phone, age, gender, badge_no, patrol_area, arrests, department, rank, supervisor
-   supervisors: UID, name
-   team: UID, name, badge_no, rank #}
+{# officer: UID, name, phone, age, gender, role, badge_no, patrol_area, arrests, department, rank, supervisor
+   supervisors: UID, name #}
 
 {% set officer = officer if officer is defined else {
-    "UID": 1, "name": "rahman", "phone": "01700000001", "age": 34, "gender": "M",
+    "UID": 1, "name": "rahman", "phone": "01700000001", "age": 34, "gender": "M", "role": "police",
     "badge_no": "BD-1042", "patrol_area": "Gulshan", "arrests": 12,
     "department": "Investigation", "rank": "Inspector", "supervisor": None
 } %}
 {% set supervisors = supervisors if supervisors is defined else [
     {"UID": 1, "name": "rahman"},
     {"UID": 5, "name": "kamal"},
-] %}
-{% set team = team if team is defined else [
-    {"UID": 3, "name": "ayesha", "badge_no": "BD-2218", "rank": "Sergeant"},
-    {"UID": 4, "name": "imran", "badge_no": "BD-3301", "rank": "Constable"},
 ] %}
 
 {% block page %}
@@ -28,19 +23,41 @@
     <p class="mt-2 text-sm text-slate-500">{{ officer.rank or "Officer" }} · {{ officer.department or "Unassigned" }}</p>
 </div>
 
-<div class="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+<div class="mx-auto flex max-w-3xl flex-col gap-6">
     <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
-        <h2 class="font-semibold text-slate-800">Manage profile</h2>
-        <p class="mt-1 text-xs text-slate-500">For supervisors updating POLICE + USER fields.</p>
+        <h2 class="font-semibold text-slate-800">User record</h2>
+        <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">UID</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.UID }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">Name</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.name or "—" }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">Phone</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.phone or "—" }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">Age</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.age or "—" }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">Gender</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.gender or "—" }}</dd>
+            </div>
+            <div class="rounded-xl bg-slate-50 px-4 py-3">
+                <dt class="text-xs text-slate-500">Role</dt>
+                <dd class="mt-1 font-medium text-slate-800">{{ officer.role or "police" }}</dd>
+            </div>
+        </dl>
+    </article>
+
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">Police record</h2>
         <form action="{{ url_for('officer_detail', uid=officer.UID) }}" method="post" class="mt-5 grid gap-4 sm:grid-cols-2">
-            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
-                Name
-                <input type="text" name="name" value="{{ officer.name }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
-            </label>
-            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
-                Phone
-                <input type="text" name="phone" value="{{ officer.phone or '' }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
-            </label>
+            <input type="hidden" name="action" value="update_police">
             <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
                 Badge no
                 <input type="text" name="badge_no" value="{{ officer.badge_no or '' }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
@@ -57,44 +74,30 @@
                 Patrol area
                 <input type="text" name="patrol_area" value="{{ officer.patrol_area or '' }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
             </label>
-            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
                 Arrests
                 <input type="number" name="arrests" value="{{ officer.arrests or 0 }}" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
             </label>
-            <label class="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
-                Supervisor
-                <select name="supervisor" class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
-                    <option value="">None</option>
-                    {% for person in supervisors %}
-                    {% if person.UID != officer.UID %}
-                    <option value="{{ person.UID }}" {% if officer.supervisor == person.UID %}selected{% endif %}>{{ person.name }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </label>
             <div class="sm:col-span-2">
-                <button type="submit" class="h-11 rounded-xl bg-blue-600 px-5 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Save officer</button>
+                <button type="submit" class="h-11 rounded-xl bg-blue-600 px-5 font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Save police record</button>
             </div>
         </form>
     </article>
 
-    <article class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50">
-        <div class="border-b border-slate-100 px-5 py-4">
-            <h2 class="font-semibold text-slate-800">Officers reporting here</h2>
-            <p class="text-xs text-slate-500">POLICE.supervisor = this UID</p>
-        </div>
-        {% if team %}
-        <ul class="divide-y divide-slate-100 text-sm">
-            {% for member in team %}
-            <li class="flex items-center justify-between px-5 py-3">
-                <a href="{{ url_for('officer_detail', uid=member.UID) }}" class="font-medium text-blue-600 hover:text-blue-700">{{ member.name }}</a>
-                <span class="text-slate-500">{{ member.badge_no }} · {{ member.rank or "—" }}</span>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="px-5 py-10 text-center text-sm text-slate-500">No officers report to this profile.</p>
-        {% endif %}
+    <article class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50">
+        <h2 class="font-semibold text-slate-800">Transfer supervisor</h2>
+        <form action="{{ url_for('officer_detail', uid=officer.UID) }}" method="post" class="mt-5 flex flex-col gap-4 sm:flex-row">
+            <input type="hidden" name="action" value="transfer_supervisor">
+            <select name="supervisor" class="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100">
+                <option value="">None</option>
+                {% for person in supervisors %}
+                {% if person.UID != officer.UID %}
+                <option value="{{ person.UID }}" {% if officer.supervisor == person.UID %}selected{% endif %}>{{ person.name }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="h-11 rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700">Transfer</button>
+        </form>
     </article>
 </div>
 {% endblock %}

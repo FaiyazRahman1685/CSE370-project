@@ -262,6 +262,7 @@ def analytics():
     ## to do: GROUP BY Incident Location and by time-of-day
     if not check_login():
         return redirect("/login")
+    
     return render_template("analytics.html")
 
 
@@ -444,14 +445,10 @@ def officers():
     ## to do: SELECT police profiles joined with USER
     if not check_login():
         return redirect("/login")
-    if not session.get("issupervisor"):
-        return redirect("/dashboard")
-    if not check_login():
-        return redirect("/login")
-    if session.get("role") != "police":
+    if session.get("role") != "police" or session.get("issupervisor") == False:
         return redirect("/dashboard")
     db = get_db()
-    officers = db.execute("SELECT p.UID, u.Name, p.rank, p.department, p.patrol_area, p.badge_no FROM Police p JOIN User u ON p.UID = u.UID").fetchall()
+    officers = db.execute("SELECT p.UID, u.Name, p.rank, p.department, p.patrol_area, p.badge_no FROM Police p JOIN User u ON p.UID = u.UID where p.supervisor = ?", (session.get("loggedin_UID"),)).fetchall()
     return render_template("officers.html", officers=officers)
 
 
@@ -460,15 +457,11 @@ def officer_detail(uid):
     ## to do: GET officer + team; POST update POLICE/USER (supervisor)
     if not check_login():
         return redirect("/login")
-    if not session.get("issupervisor"):
+    if session.get("role") != "police" or session.get("issupervisor") == False:
         return redirect("/dashboard")
-    if not check_login():
-            return redirect("/login")
-    if session.get("role") != "police":
-        return redirect("/dashboard")
-
-
-    return render_template("officer_detail.html")
+    db = get_db()
+    officer = db.execute("SELECT p.UID, u.phone, u.age, u.gender, u.Name, p.rank, p.department, p.patrol_area, p.badge_no, p.number_of_arrests FROM Police p JOIN User u ON p.UID = u.UID WHERE p.UID = ?", (uid,)).fetchone()
+    return render_template("officer_detail.html", officer=officer)
 
 
 @app.route("/my-cases", methods=["GET", "POST"])

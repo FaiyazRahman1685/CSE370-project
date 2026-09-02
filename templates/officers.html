@@ -29,7 +29,6 @@
                     <th class="px-5 py-3 font-medium">Department</th>
                     <th class="px-5 py-3 font-medium">Patrol area</th>
                     <th class="px-5 py-3 font-medium">Arrests</th>
-                    <th class="px-5 py-3 font-medium">Supervisor</th>
                     <th class="px-5 py-3 font-medium"></th>
                 </tr>
             </thead>
@@ -42,7 +41,6 @@
                     <td class="px-5 py-3">{{ officer.department or "—" }}</td>
                     <td class="px-5 py-3">{{ officer.patrol_area or "—" }}</td>
                     <td class="px-5 py-3">{{ officer.arrests or 0 }}</td>
-                    <td class="px-5 py-3">{{ officer.supervisor_name or "—" }}</td>
                     <td class="px-5 py-3 text-right">
                         <a href="{{ url_for('officer_detail', uid=officer.UID) }}" class="font-medium text-blue-600 hover:text-blue-700">View</a>
                     </td>
